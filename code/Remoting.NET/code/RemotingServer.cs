@@ -85,6 +85,7 @@ namespace Remoting {
             StreamWriter writer = new(stream);
             writer.AutoFlush = true;
             writer.WriteLine(string.Empty);
+            listener.Stop();
         } //Stop
 
         readonly Thread listeningThread;
