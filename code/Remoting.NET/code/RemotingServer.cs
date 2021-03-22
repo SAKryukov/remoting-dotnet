@@ -17,7 +17,7 @@ namespace Remoting {
     using TcpClient = System.Net.Sockets.TcpClient;
     using StreamReader = System.IO.StreamReader;
     using StreamWriter = System.IO.StreamWriter;
-    using ClientList = System.Collections.Generic.List<System.Net.Sockets.TcpClient>;
+    using ClientList = System.Collections.Generic.List<ClientWrapper>;
     using Dns = System.Net.Dns;
     using IPAddress = System.Net.IPAddress;
     using Thread = System.Threading.Thread;
@@ -93,33 +93,31 @@ namespace Remoting {
         void ListenerThreadBody() {
             while (!doStop) {
                 var client = listener.AcceptTcpClient();
-                clientList.Add(client);
+                clientList.Add(new ClientWrapper(client));
                 protocolStopper.Set();
             }
         }
         void ProtocolThreadBody() {
+            Stream stream = null;
             while (!doStop) {
                 protocolStopper.WaitOne();
                 for (int index = clientList.Count - 1; index >= 0; --index) {
                     try {
                         var client = clientList[index];
                         ClientDialog(client);
-                    } catch(System.Exception) {
+                    } catch (System.Exception) {
                         if (doStop) return;
                         var client = clientList[index];
                         clientList.RemoveAt(index);
-                        client.Dispose();
+                        ((System.IDisposable)client).Dispose();
                         if (clientList.Count < 1)
                             protocolStopper.Reset();
                     } //exception
                 } //loop clients
-                void ClientDialog(TcpClient client) {
-                    using Stream stream = client.GetStream();
-                    using StreamReader reader = new(stream);
-                    using StreamWriter writer = new(stream);
-                    var requestLine = reader.ReadLine();
+                void ClientDialog(ClientWrapper wrapper) {
+                    var requestLine = wrapper.reader.ReadLine();
                     string responseLine = GenerateResponse(requestLine);
-                    writer.WriteLine(responseLine);
+                    wrapper.writer.WriteLine(responseLine);
                 } //ClientDialog
             } //infinite loop
         } //ProtocolThreadBody
@@ -149,5 +147,25 @@ namespace Remoting {
         readonly ManualResetEvent protocolStopper = new(false);
         bool doStop = false;
     } //class Server
+
+    class ClientWrapper : System.IDisposable {
+        internal ClientWrapper(TcpClient client) {
+            this.client = client;
+            stream = client.GetStream();
+            reader = new(stream);
+            writer = new(stream);
+            writer.AutoFlush = true;
+        }
+        void System.IDisposable.Dispose() {
+            writer.Dispose();
+            reader.Dispose();
+            stream.Dispose();
+            client.Dispose();
+        }
+        internal readonly TcpClient client;
+        internal readonly Stream stream;
+        internal readonly StreamReader reader;
+        internal readonly StreamWriter writer;
+    } //class ClientWrapper
 
 }

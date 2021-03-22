@@ -10,6 +10,7 @@
 namespace Remoting {
     using System.Runtime.Serialization;
     using Encoding = System.Text.Encoding;
+    using Stream = System.IO.Stream;
     using MemoryStream = System.IO.MemoryStream;
 
     public static class DefinitionSet {
