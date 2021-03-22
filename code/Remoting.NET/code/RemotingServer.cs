@@ -11,6 +11,7 @@ namespace Remoting {
     using System.Reflection;
     using System.Reflection.Emit;
     using Object = System.Object;
+    using Stream = System.IO.Stream;
     using DataContractSerializer = System.Runtime.Serialization.DataContractSerializer;
     using TcpListener = System.Net.Sockets.TcpListener;
     using TcpClient = System.Net.Sockets.TcpClient;
@@ -96,11 +97,14 @@ namespace Remoting {
             }
         }
         void ProtocolThreadBody() {
+            Stream stream = null;
             while (!doStop) {
                 protocolStopper.WaitOne();
                 for (int index = clientList.Count - 1; index >= 0; --index) {
                     try {
-                        ClientDialog(clientList[index]);
+                        var client = clientList[index];
+                        stream = client.GetStream();
+                        ClientDialog(stream);
                     } catch(System.Exception) {
                         if (doStop) return;
                         var client = clientList[index];
@@ -110,10 +114,9 @@ namespace Remoting {
                             protocolStopper.Reset();
                     } //exception
                 } //loop clients
-                void ClientDialog(TcpClient client) {
-                    using System.IO.Stream stream = client.GetStream();
-                    using System.IO.StreamReader reader = new(stream);
-                    using System.IO.StreamWriter writer = new(stream);
+                void ClientDialog(Stream stream) {
+                    System.IO.StreamReader reader = new(stream);
+                    System.IO.StreamWriter writer = new(stream);
                     var requestLine = reader.ReadLine();
                     string responseLine = GenerateResponse(requestLine);
                     writer.WriteLine(responseLine);
@@ -125,7 +128,7 @@ namespace Remoting {
             var callRequest = (MethodSchema)Utility.StringToObject(serializer, request);
             var dynamicMethod = methodDictionary[callRequest.MethodName]; // the heart of the remote procedure call
             if (dynamicMethod == null)
-                return string.Empty;
+                return DefinitionSet.InterfaceMethodNotFoundIndicator;
             var allParameters = new Object[callRequest.actualParameters.Length + 1];
             callRequest.actualParameters.CopyTo(allParameters, 1);
             allParameters[0] = implementor; // plays the role of "this"

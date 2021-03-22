@@ -17,12 +17,12 @@ namespace Test {
                 "localhost",
                 Remoting.DefinitionSet.PortAssignmentsIANA.DynamicPrivatePorts.First);
             remotingClient.Implementation.B(13, 33);
-            return;
             var a = remotingClient.Implementation.A(3, 11);
             Console.WriteLine(a);
             a = remotingClient.Implementation.A(13, 111);
             Console.WriteLine(a);
             Console.WriteLine("Done!");
+            System.Console.ReadKey();
         } //Main
 
     } //class Entry
