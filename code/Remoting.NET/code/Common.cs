@@ -30,6 +30,7 @@ namespace Remoting {
                 public const int Last = 0xFFFF; //65535;
             } //class DynamicPrivatePorts   
         } //PortAssignmentsIANA
+        internal const string NullIndicator = "?";
     } //class DefinitionSet
 
     public interface IContract { }

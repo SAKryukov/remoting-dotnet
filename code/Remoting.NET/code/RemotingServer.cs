@@ -130,6 +130,8 @@ namespace Remoting {
             callRequest.actualParameters.CopyTo(allParameters, 1);
             allParameters[0] = implementor; // plays the role of "this"
             Object response = dynamicMethod.Invoke(null, allParameters); // the heart of the remote procedure call
+            if (response == null)
+                return DefinitionSet.NullIndicator;
             DataContractSerializer responseSerializer = new(response.GetType());
             return Utility.ObjectToString(responseSerializer, response);
         } //GenerateResponse

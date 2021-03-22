@@ -14,6 +14,9 @@ namespace Test {
         string ITestContract.A(int a, int b) {
             return $"a: {a}, b:{b}, a+b: {a+b}";
         }
+        void ITestContract.B(int a, int b) {
+            Console.WriteLine("B called.");
+        }
     };
 
     class Entry {

@@ -58,6 +58,8 @@ namespace Remoting {
                 string responseLine = reader.ReadLine();
                 if (responseLine == string.Empty)
                     throw new MethodNotFoundException(methodSchema.MethodName);
+                else if (responseLine == DefinitionSet.NullIndicator)
+                    return null;
                 DataContractSerializer returnSerializer = new(targetMethod.ReturnType);
                 return Utility.StringToObject(returnSerializer, responseLine);
             } //Invoke
