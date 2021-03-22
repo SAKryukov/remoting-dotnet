@@ -32,8 +32,22 @@ namespace Test {
 
     class Entry {
 
+        static string ClientNumber(int number) {
+            string subject = number == 1 ? "client" : "clients";
+            return $"{number} {subject}";
+        }
+
         static void Main() {
             var server = new Remoting.Server<ITestContract, Implementation>(Remoting.DefinitionSet.PortAssignmentsIANA.DynamicPrivatePorts.First, new Implementation());
+            server.Connected += (sender, eventArgs) => {
+                Console.WriteLine($"Client connected, serving {ClientNumber(eventArgs.ClientCount)}");
+            };
+            server.Disconnected += (sender, eventArgs) => {
+                Console.WriteLine($"Client disconnected, serving {ClientNumber(eventArgs.ClientCount)}");
+            };
+            server.ExecutionPhaseChanged += (sender, eventArgs) => {
+                Console.WriteLine($"Server {eventArgs.Phase}");
+            };
             server.Start();
             Console.WriteLine("Listening... To stop, press any key...");
             System.Console.ReadKey(true);

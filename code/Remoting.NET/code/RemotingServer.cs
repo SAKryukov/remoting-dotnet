@@ -29,9 +29,11 @@ namespace Remoting {
 
         public Server(int port, IMPLEMENTATION implementor) {
             Debug.Assert(implementor != null);
+            ExecutionPhaseChanged?.Invoke(this, new ExecutionPhaseEventArgs(ExecutionPhase.ReflectionStarted));
             methodDictionary = new();
             this.implementor = implementor;
             AddCallers(methodDictionary, implementor.GetType(), typeof(CONTRACT));
+            ExecutionPhaseChanged?.Invoke(this, new ExecutionPhaseEventArgs(ExecutionPhase.ReflectionComplete));
             localIpAddress = Dns.GetHostEntry("localhost").AddressList[0];
             this.port = port;
             listener = new(localIpAddress, port);
@@ -84,10 +86,11 @@ namespace Remoting {
             listener.Start();
             listeningThread.Start();
             protocolThread.Start();
+            ExecutionPhaseChanged?.Invoke(this, new ExecutionPhaseEventArgs(ExecutionPhase.Started));
         } //Start
 
         public void Stop() {
-            doStop = true;
+            RequestStop();
             using TcpClient stopper = new();
             stopper.Connect(localIpAddress, port);
             var stream = stopper.GetStream();
@@ -95,7 +98,29 @@ namespace Remoting {
             writer.AutoFlush = true;
             writer.WriteLine(DefinitionSet.StopIndicator);
             listener.Stop();
+            ExecutionPhaseChanged?.Invoke(this, new ExecutionPhaseEventArgs(ExecutionPhase.Stopped));
         } //Stop
+
+        #region events
+
+        public class ConnectionStatusEventArgs : System.EventArgs {
+            internal ConnectionStatusEventArgs(int clientCount) { ClientCount = clientCount; }
+            public int ClientCount { get; private init; }
+        }
+        public class PhaseStatusEventArgs : System.EventArgs {
+            internal PhaseStatusEventArgs(int clientCount) { ClientCount = clientCount; }
+            public int ClientCount { get; private init; }
+        }
+        public System.EventHandler<ConnectionStatusEventArgs> Connected, Disconnected;
+
+        public enum ExecutionPhase { ReflectionStarted, ReflectionComplete, Started, StopRequested, Stopped, Failed }
+        public class ExecutionPhaseEventArgs : System.EventArgs {
+            internal ExecutionPhaseEventArgs(ExecutionPhase phase) { Phase = phase; }
+            public ExecutionPhase Phase { get; private init; }
+        }
+        public System.EventHandler<ExecutionPhaseEventArgs> ExecutionPhaseChanged;
+
+        #endregion events
 
         readonly Thread listeningThread;
         readonly Thread protocolThread;
@@ -104,9 +129,10 @@ namespace Remoting {
             while (!doStop) {
                 var client = listener.AcceptTcpClient();
                 clientList.Add(new ClientWrapper(client));
+                Connected?.Invoke(this, new ConnectionStatusEventArgs(clientList.Count));
                 protocolStopper.Set();
             }
-        }
+        } // ExecutionPhaseChanged
         void ProtocolThreadBody() {
             while (!doStop) {
                 protocolStopper.WaitOne();
@@ -114,20 +140,20 @@ namespace Remoting {
                     try {
                         ClientDialog(clientList[index]);
                         if (doStop) return;
-                    } catch (System.Exception e) {
-                        System.Console.WriteLine($"{e.GetType().FullName}: {e.Message}");
+                    } catch (System.Exception) {
                         if (doStop) return;
                         var client = clientList[index];
                         clientList.RemoveAt(index);
                         ((System.IDisposable)client).Dispose();
                         if (clientList.Count < 1)
                             protocolStopper.Reset();
+                        Disconnected?.Invoke(this, new ConnectionStatusEventArgs(clientList.Count));
                     } //exception
                 } //loop clients
                 void ClientDialog(ClientWrapper wrapper) {
                     var requestLine = wrapper.reader.ReadLine();
                     if (requestLine == DefinitionSet.StopIndicator) {
-                        doStop = true;
+                        RequestStop();
                         return;
                     } //if
                     string responseLine = GenerateResponse(requestLine);
@@ -139,8 +165,10 @@ namespace Remoting {
         string GenerateResponse(string request) {
             var callRequest = (MethodSchema)Utility.StringToObject(serializer, request);
             var dynamicMethod = methodDictionary[callRequest.MethodName]; // the heart of the remote procedure call
-            if (dynamicMethod == null)
+            if (dynamicMethod == null) {
+                ExecutionPhaseChanged?.Invoke(this, new ExecutionPhaseEventArgs(ExecutionPhase.Failed));
                 return DefinitionSet.InterfaceMethodNotFoundIndicator;
+            } //if
             var allParameters = new Object[callRequest.actualParameters.Length + 1];
             callRequest.actualParameters.CopyTo(allParameters, 1);
             allParameters[0] = implementor; // plays the role of "this"
@@ -160,6 +188,10 @@ namespace Remoting {
         readonly MethodDictionary methodDictionary;
         readonly ManualResetEvent protocolStopper = new(false);
         bool doStop = false;
+        void RequestStop() {
+            doStop = true;
+            ExecutionPhaseChanged?.Invoke(this, new ExecutionPhaseEventArgs(ExecutionPhase.StopRequested));
+        } //RequestStop
     } //class Server
 
     class ClientWrapper : System.IDisposable {

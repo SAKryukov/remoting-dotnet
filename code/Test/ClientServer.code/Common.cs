@@ -9,7 +9,6 @@
 
 namespace Test {
 
-
     interface ITestContract : Remoting.IContract {
         string A(int a, int b);
         string P { get; set; }
