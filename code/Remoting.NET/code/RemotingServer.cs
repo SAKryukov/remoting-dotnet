@@ -15,6 +15,7 @@ namespace Remoting {
     using DataContractSerializer = System.Runtime.Serialization.DataContractSerializer;
     using TcpListener = System.Net.Sockets.TcpListener;
     using TcpClient = System.Net.Sockets.TcpClient;
+    using StreamReader = System.IO.StreamReader;
     using StreamWriter = System.IO.StreamWriter;
     using ClientList = System.Collections.Generic.List<System.Net.Sockets.TcpClient>;
     using Dns = System.Net.Dns;
@@ -97,14 +98,12 @@ namespace Remoting {
             }
         }
         void ProtocolThreadBody() {
-            Stream stream = null;
             while (!doStop) {
                 protocolStopper.WaitOne();
                 for (int index = clientList.Count - 1; index >= 0; --index) {
                     try {
                         var client = clientList[index];
-                        stream = client.GetStream();
-                        ClientDialog(stream);
+                        ClientDialog(client);
                     } catch(System.Exception) {
                         if (doStop) return;
                         var client = clientList[index];
@@ -114,9 +113,10 @@ namespace Remoting {
                             protocolStopper.Reset();
                     } //exception
                 } //loop clients
-                void ClientDialog(Stream stream) {
-                    System.IO.StreamReader reader = new(stream);
-                    System.IO.StreamWriter writer = new(stream);
+                void ClientDialog(TcpClient client) {
+                    using Stream stream = client.GetStream();
+                    using StreamReader reader = new(stream);
+                    using StreamWriter writer = new(stream);
                     var requestLine = reader.ReadLine();
                     string responseLine = GenerateResponse(requestLine);
                     writer.WriteLine(responseLine);

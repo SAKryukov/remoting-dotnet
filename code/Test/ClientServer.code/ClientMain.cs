@@ -16,7 +16,7 @@ namespace Test {
             var remotingClient = new Remoting.Client<ITestContract>(
                 "localhost",
                 Remoting.DefinitionSet.PortAssignmentsIANA.DynamicPrivatePorts.First);
-            remotingClient.Implementation.B(13, 33);
+            //remotingClient.Implementation.B(13, 33);
             var a = remotingClient.Implementation.A(3, 11);
             Console.WriteLine(a);
             a = remotingClient.Implementation.A(13, 111);

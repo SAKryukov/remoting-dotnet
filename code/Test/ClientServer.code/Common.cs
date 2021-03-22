@@ -12,7 +12,7 @@ namespace Test {
 
     interface ITestContract : Remoting.IContract {
         string A(int a, int b);
-        void B(int a, int b);
+        //void B(int a, int b);
     }
 
 }
