@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputPath>$(SolutionDir)\output.$(Configuration).$(Platform)</OutputPath>
+    <TargetFramework>net5.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <Product>Remoting.NET</Product>
+    <Description>Remoting for .NET Core, .NET 5, and later versions</Description>
+    <Copyright>Copyright © 2017-2021 by Sergey A Kryukov</Copyright>
+    <Authors>Sergey A Kryukov</Authors>
+    <Version>0.1.0.0</Version>
+    <AssemblyVersion>0.1.0.0</AssemblyVersion>
+    <FileVersion>0.1.0.0</FileVersion>
+    <RepositoryUrl>https://github.com/SAKryukov/remoting-dotnet</RepositoryUrl>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\ClientServer.code\Common.cs" Link="Common.cs" />
+    <Compile Include="..\ClientServer.code\ServerMain.cs" Link="ServerMain.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Remoting.NET\Remoting.NET.csproj" />
+  </ItemGroup>
+
+</Project>

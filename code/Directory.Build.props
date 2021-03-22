@@ -1,0 +1,5 @@
+<Project>
+ <PropertyGroup>
+   <BaseIntermediateOutputPath>$(SolutionDir).intermediateOutput\$(MSBuildProjectName)\$(Configuration).$(Platform)</BaseIntermediateOutputPath>
+ </PropertyGroup>
+</Project>
