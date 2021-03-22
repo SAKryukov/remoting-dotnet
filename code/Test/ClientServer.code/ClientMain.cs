@@ -18,12 +18,14 @@ namespace Test {
                 Remoting.DefinitionSet.PortAssignmentsIANA.DynamicPrivatePorts.First);
             Console.WriteLine("Ready to connect and call first method remotely... To quit, press any key...");
             try {
+                /*
                 remotingClient.Implementation.P = "my value";
                 Console.WriteLine(remotingClient.Implementation.P);
                 remotingClient.Implementation.B(1, 2);
                 var a = remotingClient.Implementation.A(3, 11);
                 Console.WriteLine(a);
-                a = remotingClient.Implementation.A(13, 111);
+                */
+                var a = remotingClient.Implementation.A(13, 'b');
                 Console.WriteLine(a);
                 /*
                 a = remotingClient.Implementation.A("This is", 1313);

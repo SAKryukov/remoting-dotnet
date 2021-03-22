@@ -58,13 +58,19 @@ namespace Remoting {
                 foreach (var method in methods) {
                     var parameterInfo = method.GetParameters();
                     var methodName = $"{interfaceType.FullName}.{method.Name}";
-                    var implementorMethod = implementorType.GetMethod(method.Name);
+                    var parameters = System.Array.ConvertAll(method.GetParameters(), new System.Converter<ParameterInfo, System.Type>(el => el.ParameterType));
+                    var implementorMethod = implementorType.GetMethod(
+                            method.Name,
+                            BindingFlags.Public | BindingFlags.Instance,
+                            null,
+                            parameters,
+                            null);
                     if (implementorMethod == null)
                         implementorMethod = implementorType.GetMethod(
                             methodName,
-                            BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance,
+                            BindingFlags.NonPublic | BindingFlags.Instance,
                             null,
-                            System.Array.ConvertAll(method.GetParameters(), new System.Converter<ParameterInfo, System.Type>(el => el.ParameterType)),
+                            parameters,
                             null);
                     dictionary.Add(method.ToString(), CreateCaller(implementorType, implementorMethod));
                 } //loop
@@ -105,7 +111,8 @@ namespace Remoting {
                     try {
                         var client = clientList[index];
                         ClientDialog(client);
-                    } catch (System.Exception) {
+                    } catch (System.Exception e) {
+                        System.Console.WriteLine($"{e.GetType().FullName}: {e.Message}");
                         if (doStop) return;
                         var client = clientList[index];
                         clientList.RemoveAt(index);

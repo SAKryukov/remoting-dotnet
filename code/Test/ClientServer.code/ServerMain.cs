@@ -11,18 +11,18 @@ namespace Test {
     using Console = System.Console;
 
     class Implementation : ITestContract {
-        string ITestContract.A(int a, int b) {
-            return $"First A: a: {a}, b:{b}, a+b: {a+b}";
+        string ITestContract.A(int a, char b) {
+            return $"First A: a: {a}, b:{b}";
         }
         string ITestContract.P {
             get { return pValue; }
             set { pValue = value; }
         }
-        string pValue = null;
-        /*
-        public string A(string a, int b) {
+        public string A(string a, int b, int c) {
             return $"Second A: a: {a}, b:{b}";
         }
+        string pValue = null;
+        /*
         string ITestContract.A(string a) {
             return $"Third A: a: {a}";
         }
