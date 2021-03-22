@@ -11,24 +11,22 @@ namespace Test {
     using Console = System.Console;
 
     class Implementation : ITestContract {
-        string ITestContract.A(int a, char b) {
-            return $"First A: a: {a}, b:{b}";
+        string ITestContract.A(int a, int b) {
+            return $"First A: a: {a}, b:{b}, a+b: {a+b} ";
         }
         string ITestContract.P {
             get { return pValue; }
             set { pValue = value; }
         }
-        public string A(string a, int b, int c) {
+        public string A(string a, int b) {
             return $"Second A: a: {a}, b:{b}";
         }
         string pValue = null;
-        /*
         string ITestContract.A(string a) {
             return $"Third A: a: {a}";
         }
-        */
         void ITestContract.B(int a, int b) {
-            Console.WriteLine("B called.");
+            Console.WriteLine("B(int, int) called; a: {a}, b:{b}");
         }
     };
 
