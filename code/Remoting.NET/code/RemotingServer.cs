@@ -98,7 +98,6 @@ namespace Remoting {
             }
         }
         void ProtocolThreadBody() {
-            Stream stream = null;
             while (!doStop) {
                 protocolStopper.WaitOne();
                 for (int index = clientList.Count - 1; index >= 0; --index) {
