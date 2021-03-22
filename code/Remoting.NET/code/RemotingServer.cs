@@ -23,10 +23,12 @@ namespace Remoting {
     using Thread = System.Threading.Thread;
     using MethodDictionary = System.Collections.Generic.Dictionary<string, System.Reflection.Emit.DynamicMethod>;
     using ManualResetEvent = System.Threading.ManualResetEvent;
+    using Debug = System.Diagnostics.Debug;
 
-    public class Server<CONTRACT, IMPLEMENTATION> where IMPLEMENTATION : CONTRACT where CONTRACT : IContract {
+    public class Server<CONTRACT, IMPLEMENTATION> where IMPLEMENTATION : CONTRACT, new() where CONTRACT : IContract {
 
         public Server(int port, IMPLEMENTATION implementor) {
+            Debug.Assert(implementor != null);
             methodDictionary = new();
             this.implementor = implementor;
             AddCallers(methodDictionary, implementor.GetType(), typeof(CONTRACT));
@@ -59,19 +61,20 @@ namespace Remoting {
                     var parameterInfo = method.GetParameters();
                     var methodName = $"{interfaceType.FullName}.{method.Name}";
                     var parameters = System.Array.ConvertAll(method.GetParameters(), new System.Converter<ParameterInfo, System.Type>(el => el.ParameterType));
-                    var implementorMethod = implementorType.GetMethod(
+                    var implementorMethod = implementorType.GetMethod( // see if there is an implicit interface method implementation, the priority in normal .NET dispatching:
                             method.Name,
                             BindingFlags.Public | BindingFlags.Instance,
                             null,
                             parameters,
                             null);
-                    if (implementorMethod == null)
+                    if (implementorMethod == null) // see if there is an explicit method implementation
                         implementorMethod = implementorType.GetMethod(
                             methodName,
                             BindingFlags.NonPublic | BindingFlags.Instance,
                             null,
                             parameters,
                             null);
+                    Debug.Assert(implementorMethod != null);
                     dictionary.Add(method.ToString(), CreateCaller(implementorType, implementorMethod));
                 } //loop
             } //AddCallers
@@ -90,7 +93,7 @@ namespace Remoting {
             var stream = stopper.GetStream();
             StreamWriter writer = new(stream);
             writer.AutoFlush = true;
-            writer.WriteLine(string.Empty);
+            writer.WriteLine(DefinitionSet.StopIndicator);
             listener.Stop();
         } //Stop
 
@@ -109,8 +112,8 @@ namespace Remoting {
                 protocolStopper.WaitOne();
                 for (int index = clientList.Count - 1; index >= 0; --index) {
                     try {
-                        var client = clientList[index];
-                        ClientDialog(client);
+                        ClientDialog(clientList[index]);
+                        if (doStop) return;
                     } catch (System.Exception e) {
                         System.Console.WriteLine($"{e.GetType().FullName}: {e.Message}");
                         if (doStop) return;
@@ -123,6 +126,10 @@ namespace Remoting {
                 } //loop clients
                 void ClientDialog(ClientWrapper wrapper) {
                     var requestLine = wrapper.reader.ReadLine();
+                    if (requestLine == DefinitionSet.StopIndicator) {
+                        doStop = true;
+                        return;
+                    } //if
                     string responseLine = GenerateResponse(requestLine);
                     wrapper.writer.WriteLine(responseLine);
                 } //ClientDialog

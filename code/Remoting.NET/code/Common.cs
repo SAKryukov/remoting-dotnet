@@ -32,6 +32,7 @@ namespace Remoting {
             } //class DynamicPrivatePorts   
         } //PortAssignmentsIANA
         internal static readonly string NullIndicator = string.Empty;
+        internal static readonly string StopIndicator = "s";
         internal const string InterfaceMethodNotFoundIndicator = "?";
     } //class DefinitionSet
 
