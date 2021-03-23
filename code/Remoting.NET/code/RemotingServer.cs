@@ -136,13 +136,13 @@ namespace Remoting {
             }
         } // ExecutionPhaseChanged
 
-        object lockObject = new();
+        readonly object lockObject = new();
 
         void ProtocolThreadBody() {
             while (!doStop) {
                 int index = 0;
                 lock(lockObject)
-                    index = ChooseNextUser();
+                    index = ChooseNextClient();
                 protocolStopper.WaitOne();
                 try {
                     lock (lockObject) {
@@ -165,16 +165,20 @@ namespace Remoting {
                     } //lock
                 } //exception
             } //infinite loop
-            int ChooseNextUser() {
+            int ChooseNextClient() {
                 if (clientList.Count > 1) {
                     var min = int.MaxValue;
+                    var winnerIndex = 0;
                     for (int index = 0; index < clientList.Count; ++index) {
                         var serviceCount = clientList[index].serviceCount;
                         if (serviceCount < 1) return 0;
-                        if (serviceCount < min) min = serviceCount;
+                        if (serviceCount < min) {
+                            min = serviceCount;
+                            winnerIndex = index;
+                        } //if
                     } //loop
                     if (min > int.MaxValue / 2) Normalize(min);
-                    return min;
+                    return winnerIndex;
                     void Normalize(int min) {
                         foreach (var wrapper in clientList) wrapper.serviceCount -= min;
                     } //Normalize
