@@ -30,6 +30,7 @@ namespace Remoting {
         public Server(int port, IMPLEMENTATION implementor) {
             Debug.Assert(implementor != null);
             ExecutionPhaseChanged?.Invoke(this, new ExecutionPhaseEventArgs(ExecutionPhase.ReflectionStarted));
+            serializer = new(typeof(MethodSchema), Utility.CollectKnownTypes(typeof(CONTRACT)));
             methodDictionary = new();
             this.implementor = implementor;
             AddCallers(methodDictionary, implementor.GetType(), typeof(CONTRACT));
@@ -215,7 +216,7 @@ namespace Remoting {
         } //GenerateResponse
 
         readonly IMPLEMENTATION implementor;
-        readonly DataContractSerializer serializer = new(typeof(MethodSchema));
+        readonly DataContractSerializer serializer;
         readonly TcpListener listener;
         readonly ClientList clientList = new();
         readonly IPAddress localIpAddress;

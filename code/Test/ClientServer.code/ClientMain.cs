@@ -9,6 +9,8 @@
 
 namespace Test {
     using Console = System.Console;
+    using System.IO;
+    using DataContractSerializer = System.Runtime.Serialization.DataContractSerializer;
 
     class Entry {
 
@@ -16,6 +18,11 @@ namespace Test {
             var remotingClient = new Remoting.Client<ITestContract>(
                 "localhost",
                 Remoting.DefinitionSet.PortAssignmentsIANA.DynamicPrivatePorts.First);
+            void TestDataContract() {
+                var graph = DirectedGraph.GraphSample();
+                remotingClient.Implementation.Insert(graph, graph.AccessNode, new Node("new!!"));
+            } //TestDataContract()
+            TestDataContract();
             Console.WriteLine("Ready to connect and call first method remotely... To quit, press any key...");
             try {
                 using Remoting.ICooperative partner = remotingClient.Partner;

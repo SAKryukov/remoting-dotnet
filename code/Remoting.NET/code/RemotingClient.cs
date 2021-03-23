@@ -24,6 +24,7 @@ namespace Remoting {
 
         public Client(string hostname, int port) {
             client = new();
+            serializer = new(typeof(MethodSchema), Utility.CollectKnownTypes(typeof(CONTRACT)));
             Proxy = DispatchProxy.Create<CONTRACT, ClientProxyBase>();
             ((IClientInfrastructure)Proxy).SetupContext(client, serializer, hostname, port);
             partner = new((IConnectable)Proxy);
@@ -89,7 +90,7 @@ namespace Remoting {
             StreamWriter writer;
         } //class ServerProxyBase
 
-        readonly DataContractSerializer serializer = new(typeof(MethodSchema));
+        readonly DataContractSerializer serializer;
         readonly TcpClient client;
         readonly CONTRACT Proxy;
 

@@ -9,9 +9,12 @@
 
 namespace Remoting {
     using System.Runtime.Serialization;
+    using System.Reflection;
     using Encoding = System.Text.Encoding;
-    using Stream = System.IO.Stream;
     using MemoryStream = System.IO.MemoryStream;
+    using TypeEnumerable = System.Collections.Generic.IEnumerable<System.Type>;
+    using TypeList = System.Collections.Generic.List<System.Type>;
+    using TypeSet = System.Collections.Generic.HashSet<System.Type>;
 
     public static class DefinitionSet {
         // IANA port numbers, IETF RFC6335:
@@ -54,6 +57,32 @@ namespace Remoting {
     } //class MethodSchema
 
     static class Utility {
+        internal static TypeEnumerable CollectKnownTypes(System.Type interfaceType) {
+            TypeSet typeSet = new();
+            var interfaces = interfaceType.GetInterfaces();
+            foreach (var parentInterfaceType in interfaces)
+                AddMethods(parentInterfaceType, typeSet);
+            AddMethods(interfaceType, typeSet);
+            TypeList result = new();
+            foreach (var value in typeSet) result.Add(value);
+            return result;
+            static void AddType(TypeSet typeSet, System.Type type) {
+                if (type == typeof(void)) return;
+                if (type.IsPrimitive) return;
+                if (type == typeof(string)) return;
+                if (!typeSet.Contains(type))
+                    typeSet.Add(type);
+            } //AddType
+            static void AddMethods(System.Type type, TypeSet typeSet) {
+                var methods = type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                foreach (var method in methods) {
+                    var parameters = method.GetParameters();
+                    foreach (var parameter in parameters)
+                        AddType(typeSet, parameter.ParameterType);
+                    AddType(typeSet, method.ReturnType);
+                } //loop methods
+            } //AddMethods
+        } //CollectKnownTypes
         internal static string ObjectToString(DataContractSerializer serializer, object graph) {
             using MemoryStream memoryStream = new();
             serializer.WriteObject(memoryStream, graph);
