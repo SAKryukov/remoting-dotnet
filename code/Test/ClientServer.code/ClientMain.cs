@@ -21,16 +21,16 @@ namespace Test {
             void TestDataContract() {
                 Console.WriteLine();
                 Console.WriteLine("Directed graph test:");
-                var graph = DirectedGraph.GraphSample();
+                var graph = DirectedGraph.DemoSample;
                 Console.WriteLine(graph.Visualize());
                 graph = remotingClient.Implementation.Insert(graph, graph.AccessNode, new Node("new"));
                 Console.WriteLine("Insert:");
                 Console.WriteLine(graph.Visualize());
-                graph = DirectedGraph.GraphSample();
-                graph = remotingClient.Implementation.Break(graph, DirectedGraph.second, DirectedGraph.third);
-                Console.WriteLine("Break:");
+                graph = DirectedGraph.DemoSample;
+                graph = remotingClient.Implementation.Disconnect(graph, DirectedGraph.second, DirectedGraph.third);
+                Console.WriteLine("Disconnect:");
                 Console.WriteLine(graph.Visualize());
-                graph = DirectedGraph.GraphSample();
+                graph = DirectedGraph.DemoSample;
                 graph = remotingClient.Implementation.Connect(graph, graph.AccessNode, DirectedGraph.second);
                 Console.WriteLine("Connect:");
                 Console.WriteLine(graph.Visualize());
@@ -49,9 +49,9 @@ namespace Test {
                 a = remotingClient.Implementation.A(13, 'b');
                 Console.WriteLine(a);
                 partner.Yield();
-                a = remotingClient.Implementation.A("First parameter is a string", 1313);
+                a = remotingClient.Implementation.A("First parameter is string", 1313);
                 Console.WriteLine(a);
-                a = remotingClient.Implementation.A("Just line");
+                a = remotingClient.Implementation.A("Only one parameter");
                 Console.WriteLine(a);
                 remotingClient.Implementation.B(2, 1);
                 Console.WriteLine("B(int, int) called");

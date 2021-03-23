@@ -59,16 +59,18 @@ namespace Test {
             }
             return sb.ToString();
         } //Visualize
-        internal static DirectedGraph GraphSample() {
-            DirectedGraph graph = new("first");
-            second = graph.Add("second");
-            third = graph.Add("third");
-            fourth = graph.Add("fourth");
-            graph.AccessNode.Next = second;
-            second.Next = third;
-            third.Next = fourth;
-            fourth.Next = graph.AccessNode;
-            return graph;
+        internal static DirectedGraph DemoSample {
+            get {
+                DirectedGraph graph = new("first");
+                second = graph.Add("second");
+                third = graph.Add("third");
+                fourth = graph.Add("fourth");
+                graph.AccessNode.Next = second;
+                second.Next = third;
+                third.Next = fourth;
+                fourth.Next = graph.AccessNode;
+                return graph;
+            }
         } //GraphSample
         internal static Node second, third, fourth;
     } //DirectedGraph
@@ -80,7 +82,7 @@ namespace Test {
         string A(string a);
         void B(int a, int b);
         DirectedGraph Connect(DirectedGraph graph, Node tail, Node head);
-        DirectedGraph Break(DirectedGraph graph, Node tail, Node head);
+        DirectedGraph Disconnect(DirectedGraph graph, Node tail, Node head);
         DirectedGraph Insert(DirectedGraph graph, Node tail, Node head);
     }
 

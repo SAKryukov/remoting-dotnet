@@ -32,7 +32,7 @@ namespace Test {
             tail.Next = head;
             return graph;
         }
-        DirectedGraph ITestContract.Break(DirectedGraph graph, Node tail, Node head) {
+        DirectedGraph ITestContract.Disconnect(DirectedGraph graph, Node tail, Node head) {
             if (head == tail.Next)
                 tail.Next = null;
             return graph;
