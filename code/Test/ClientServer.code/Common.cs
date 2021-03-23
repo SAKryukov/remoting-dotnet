@@ -40,13 +40,14 @@ namespace Test {
         } //Visualize
         internal static DirectedGraph GraphSample() {
             DirectedGraph graph = new("first");
-            var second = graph.AccessNode.Add("second");
-            var third = second.Add("third");
-            var fourth = third.Add("fourth");
+            second = graph.AccessNode.Add("second");
+            third = second.Add("third");
+            fourth = third.Add("fourth");
             fourth.Next.Add(second);
             third.Next.Add(graph.AccessNode);
             return graph;
         } //GraphSample
+        internal static Node second, third, fourth;
     } //DirectedGraph
 
     [KnownType(typeof(Node))]

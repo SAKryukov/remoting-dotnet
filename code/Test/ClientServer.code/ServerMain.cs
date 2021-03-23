@@ -28,7 +28,6 @@ namespace Test {
         void ITestContract.B(int a, int b) {
             Console.WriteLine("B(int, int) called; a: {a}, b:{b}");
         }
-
         DirectedGraph ITestContract.Stich(DirectedGraph graph, Node tail, Node head) {
             tail.Next.Add(head);
             return graph;
@@ -36,7 +35,7 @@ namespace Test {
         DirectedGraph ITestContract.Break(DirectedGraph graph, Node tail, Node head) {
             int found = -1;
             for (int index = 0; index < tail.Next.Count; ++index)
-                if (tail.Next[index] == head) {
+                if (tail.Next[index].Name == head.Name) {
                     found = index;
                     break;
                 }
@@ -51,8 +50,7 @@ namespace Test {
             tail.Next.Add(head);
             return graph;
         }
-
-    };
+    }; //class Implementation
 
     class Entry {
 
@@ -76,7 +74,7 @@ namespace Test {
             Console.WriteLine("Listening... To stop, press any key...");
             System.Console.ReadKey(true);
             server.Stop();
-        }
+        } //Main
 
     } //class Entry
 

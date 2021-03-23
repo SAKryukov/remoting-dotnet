@@ -9,22 +9,37 @@
 
 namespace Test {
     using Console = System.Console;
-    using System.IO;
-    using DataContractSerializer = System.Runtime.Serialization.DataContractSerializer;
 
     class Entry {
 
         static void Main() {
+
             var remotingClient = new Remoting.Client<ITestContract>(
                 "localhost",
                 Remoting.DefinitionSet.PortAssignmentsIANA.DynamicPrivatePorts.First);
+
             void TestDataContract() {
+                Console.WriteLine("\nDirected graph test:");
                 var graph = DirectedGraph.GraphSample();
-                remotingClient.Implementation.Insert(graph, graph.AccessNode, new Node("new!!"));
+                DirectedGraph.Visualize(graph);
+                graph = remotingClient.Implementation.Insert(graph, graph.AccessNode, new Node("new"));
+                Console.WriteLine("\nInsert:");
+                DirectedGraph.Visualize(graph);
+                graph = DirectedGraph.GraphSample();
+                graph = remotingClient.Implementation.Break(graph, DirectedGraph.second, DirectedGraph.third);
+                Console.WriteLine("\nBreak:");
+                DirectedGraph.Visualize(graph);
+                graph = DirectedGraph.GraphSample();
+                graph = remotingClient.Implementation.Stich(graph, graph.AccessNode, DirectedGraph.second);
+                Console.WriteLine("\nStich:");
+                DirectedGraph.Visualize(graph);
+
+                Console.WriteLine("\n");
             } //TestDataContract()
-            TestDataContract();
+
             Console.WriteLine("Ready to connect and call first method remotely... To quit, press any key...");
             try {
+                TestDataContract();
                 using Remoting.ICooperative partner = remotingClient.Partner;
                 remotingClient.Implementation.P = "My property P value";
                 Console.WriteLine(remotingClient.Implementation.P);
@@ -43,8 +58,10 @@ namespace Test {
                 Console.WriteLine("Done!");
             } catch (System.Exception e) {
                 Console.WriteLine($"Is the server started?\n{e.GetType().Name}:\n{e.Message}");
-            }
+            } //exception
+
             System.Console.ReadKey(true);
+
         } //Main
 
     } //class Entry
