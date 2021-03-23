@@ -18,7 +18,7 @@ namespace Test {
                 "localhost",
                 Remoting.DefinitionSet.PortAssignmentsIANA.DynamicPrivatePorts.First);
 
-            void TestDataContract() {
+            void TestGraphs() {
                 Console.WriteLine();
                 Console.WriteLine("Directed graph test:");
                 var graph = DirectedGraph.DemoSample;
@@ -35,11 +35,11 @@ namespace Test {
                 Console.WriteLine("Connect:");
                 Console.WriteLine(graph.Visualize());
                 Console.WriteLine();
-            } //TestDataContract()
+            } //TestGraphs
 
             Console.WriteLine("Ready to connect and call first method remotely... To quit, press any key...");
             try {
-                TestDataContract();
+                TestGraphs();
                 using Remoting.ICooperative partner = remotingClient.Partner;
                 remotingClient.Implementation.P = "My property P value";
                 Console.WriteLine(remotingClient.Implementation.P);
