@@ -28,6 +28,30 @@ namespace Test {
         void ITestContract.B(int a, int b) {
             Console.WriteLine("B(int, int) called; a: {a}, b:{b}");
         }
+
+        DirectedGraph ITestContract.Stich(DirectedGraph graph, Node tail, Node head) {
+            tail.Next.Add(head);
+            return graph;
+        }
+        DirectedGraph ITestContract.Break(DirectedGraph graph, Node tail, Node head) {
+            int found = -1;
+            for (int index = 0; index < tail.Next.Count; ++index)
+                if (tail.Next[index] == head) {
+                    found = index;
+                    break;
+                }
+            if (found >= 0)
+                tail.Next.RemoveAt(found);
+            return graph;
+        }
+        DirectedGraph ITestContract.Insert(DirectedGraph graph, Node tail, Node head) {
+            head.Next.Clear();
+            foreach (var node in tail.Next) head.Next.Add(node);
+            tail.Next.Clear();
+            tail.Next.Add(head);
+            return graph;
+        }
+
     };
 
     class Entry {
