@@ -26,7 +26,7 @@ namespace Test {
             return $"Third A: a: {a}";
         }
         void ITestContract.B(int a, int b) {
-            Console.WriteLine("B(int, int) called; a: {a}, b:{b}");
+            Console.WriteLine($"B(int, int) called; a: {a}, b:{b}");
         }
         DirectedGraph ITestContract.Connect(DirectedGraph graph, Node tail, Node head) {
             tail.Next = head;

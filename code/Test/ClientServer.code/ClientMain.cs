@@ -49,7 +49,7 @@ namespace Test {
                 a = remotingClient.Implementation.A(13, 'b');
                 Console.WriteLine(a);
                 partner.Yield();
-                a = remotingClient.Implementation.A("This is", 1313);
+                a = remotingClient.Implementation.A("First parameter is a string", 1313);
                 Console.WriteLine(a);
                 a = remotingClient.Implementation.A("Just line");
                 Console.WriteLine(a);
