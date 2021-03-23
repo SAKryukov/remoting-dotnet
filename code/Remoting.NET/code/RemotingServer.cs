@@ -128,38 +128,69 @@ namespace Remoting {
         void ListenerThreadBody() {
             while (!doStop) {
                 var client = listener.AcceptTcpClient();
-                clientList.Add(new ClientWrapper(client));
-                Connected?.Invoke(this, new ConnectionStatusEventArgs(clientList.Count));
+                lock (lockObject) {
+                    clientList.Add(new ClientWrapper(client));
+                    Connected?.Invoke(this, new ConnectionStatusEventArgs(clientList.Count));
+                } //lock
                 protocolStopper.Set();
             }
         } // ExecutionPhaseChanged
+
+        object lockObject = new();
+
         void ProtocolThreadBody() {
             while (!doStop) {
+                int index = 0;
+                lock(lockObject)
+                    index = ChooseNextUser();
                 protocolStopper.WaitOne();
-                for (int index = clientList.Count - 1; index >= 0; --index) {
-                    try {
+                try {
+                    lock (lockObject) {
+                        if (clientList.Count <= index) break;
                         ClientDialog(clientList[index]);
-                        if (doStop) return;
-                    } catch (System.Exception) {
-                        if (doStop) return;
-                        var client = clientList[index];
+                    } //lock
+                    if (doStop) return;
+                } catch (System.Exception) {
+                    if (doStop) return;
+                    ClientWrapper client = null;
+                    lock (lockObject) {
+                        client = clientList[index];
                         clientList.RemoveAt(index);
-                        ((System.IDisposable)client).Dispose();
+                    } //lock
+                    ((System.IDisposable)client).Dispose();
+                    lock (lockObject) {
                         if (clientList.Count < 1)
                             protocolStopper.Reset();
                         Disconnected?.Invoke(this, new ConnectionStatusEventArgs(clientList.Count));
-                    } //exception
-                } //loop clients
-                void ClientDialog(ClientWrapper wrapper) {
-                    var requestLine = wrapper.reader.ReadLine();
-                    if (requestLine == DefinitionSet.StopIndicator) {
-                        RequestStop();
-                        return;
-                    } //if
-                    string responseLine = GenerateResponse(requestLine);
-                    wrapper.writer.WriteLine(responseLine);
-                } //ClientDialog
+                    } //lock
+                } //exception
             } //infinite loop
+            int ChooseNextUser() {
+                if (clientList.Count > 1) {
+                    var min = int.MaxValue;
+                    for (int index = 0; index < clientList.Count; ++index) {
+                        var serviceCount = clientList[index].serviceCount;
+                        if (serviceCount < 1) return 0;
+                        if (serviceCount < min) min = serviceCount;
+                    } //loop
+                    if (min > int.MaxValue / 2) Normalize(min);
+                    return min;
+                    void Normalize(int min) {
+                        foreach (var wrapper in clientList) wrapper.serviceCount -= min;
+                    } //Normalize
+                } else if (clientList.Count < 1)
+                    protocolStopper.Reset();
+                return 0;
+            } //ChooseNextUser
+            void ClientDialog(ClientWrapper wrapper) {
+                var requestLine = wrapper.reader.ReadLine();
+                if (requestLine == DefinitionSet.StopIndicator) {
+                    RequestStop();
+                    return;
+                } //if
+                string responseLine = GenerateResponse(requestLine);
+                wrapper.writer.WriteLine(responseLine);
+            } //ClientDialog
         } //ProtocolThreadBody
 
         string GenerateResponse(string request) {
@@ -208,6 +239,7 @@ namespace Remoting {
             stream.Dispose();
             client.Dispose();
         }
+        internal int serviceCount = 0;
         internal readonly TcpClient client;
         internal readonly Stream stream;
         internal readonly StreamReader reader;

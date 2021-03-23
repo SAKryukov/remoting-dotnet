@@ -14,10 +14,11 @@ namespace Remoting {
     using DataContractSerializer = System.Runtime.Serialization.DataContractSerializer;
     using StreamReader = System.IO.StreamReader;
     using StreamWriter = System.IO.StreamWriter;
+    using IDisposable = System.IDisposable;
 
     public class Client<CONTRACT> where CONTRACT : IContract {
 
-        public class MethodNotFoundException: System.ApplicationException {
+        public class MethodNotFoundException : System.ApplicationException {
             public MethodNotFoundException(string method) : base(method) { }
         } //class MethodNotFoundException
 
@@ -25,7 +26,18 @@ namespace Remoting {
             client = new();
             Proxy = DispatchProxy.Create<CONTRACT, ClientProxyBase>();
             ((IClientInfrastructure)Proxy).SetupContext(client, serializer, hostname, port);
+            disposableConnection = new((IConnectable)Proxy);
         } //Client
+
+        public sealed class DisposableConnection : IDisposable {
+            internal DisposableConnection(IConnectable proxy) { this.proxy = proxy; }
+            void IDisposable.Dispose() {
+                proxy.Disconnect();
+            }
+            readonly IConnectable proxy;
+        }
+        readonly DisposableConnection disposableConnection;
+        public System.IDisposable AutoRelease { get { return disposableConnection; } }
 
         public CONTRACT Implementation { get { return Proxy; } }
 
@@ -33,12 +45,14 @@ namespace Remoting {
             void SetupContext(TcpClient client, DataContractSerializer serializer, string hostname, int port);
         } //interface IClientInfrastructure
 
-        public class ClientProxyBase : DispatchProxy, IClientInfrastructure {
-            ~ClientProxyBase() {
-                reader.Dispose();
-                writer.Dispose();
-                client.Dispose();
-            }
+        public interface IConnectable { void Disconnect(); }
+
+        public class ClientProxyBase : DispatchProxy, IClientInfrastructure, IConnectable {
+            void IConnectable.Disconnect() {
+                if (reader !=null) reader.Dispose();
+                if (writer != null) writer.Dispose();
+                if (stream != null) stream.Dispose();
+            } //Disconnect
             void IClientInfrastructure.SetupContext(TcpClient client, DataContractSerializer serializer, string hostname, int port) {
                 this.client = client;
                 this.callSerializer = serializer;
