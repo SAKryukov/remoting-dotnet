@@ -88,7 +88,7 @@ namespace Remoting {
             Stream stream;
             StreamReader reader;
             StreamWriter writer;
-        } //class ServerProxyBase
+        } //class ClientProxyBase
 
         readonly DataContractSerializer serializer;
         readonly TcpClient client;
