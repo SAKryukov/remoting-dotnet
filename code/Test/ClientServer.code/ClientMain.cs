@@ -19,22 +19,22 @@ namespace Test {
                 Remoting.DefinitionSet.PortAssignmentsIANA.DynamicPrivatePorts.First);
 
             void TestDataContract() {
-                Console.WriteLine("\nDirected graph test:");
+                Console.WriteLine();
+                Console.WriteLine("Directed graph test:");
                 var graph = DirectedGraph.GraphSample();
-                DirectedGraph.Visualize(graph);
+                Console.WriteLine(graph.Visualize());
                 graph = remotingClient.Implementation.Insert(graph, graph.AccessNode, new Node("new"));
-                Console.WriteLine("\nInsert:");
-                DirectedGraph.Visualize(graph);
+                Console.WriteLine("Insert:");
+                Console.WriteLine(graph.Visualize());
                 graph = DirectedGraph.GraphSample();
                 graph = remotingClient.Implementation.Break(graph, DirectedGraph.second, DirectedGraph.third);
-                Console.WriteLine("\nBreak:");
-                DirectedGraph.Visualize(graph);
+                Console.WriteLine("Break:");
+                Console.WriteLine(graph.Visualize());
                 graph = DirectedGraph.GraphSample();
-                graph = remotingClient.Implementation.Stich(graph, graph.AccessNode, DirectedGraph.second);
-                Console.WriteLine("\nStich:");
-                DirectedGraph.Visualize(graph);
-
-                Console.WriteLine("\n");
+                graph = remotingClient.Implementation.Connect(graph, graph.AccessNode, DirectedGraph.second);
+                Console.WriteLine("Connect:");
+                Console.WriteLine(graph.Visualize());
+                Console.WriteLine();
             } //TestDataContract()
 
             Console.WriteLine("Ready to connect and call first method remotely... To quit, press any key...");
