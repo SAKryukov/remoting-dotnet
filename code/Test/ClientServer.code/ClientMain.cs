@@ -18,7 +18,7 @@ namespace Test {
                 Remoting.DefinitionSet.PortAssignmentsIANA.DynamicPrivatePorts.First);
             Console.WriteLine("Ready to connect and call first method remotely... To quit, press any key...");
             try {
-                using System.IDisposable autoRelease = remotingClient.AutoRelease;
+                using Remoting.ICooperative partner = remotingClient.Partner;
                 remotingClient.Implementation.P = "My property P value";
                 Console.WriteLine(remotingClient.Implementation.P);
                 remotingClient.Implementation.B(1, 2);
@@ -26,6 +26,7 @@ namespace Test {
                 Console.WriteLine(a);
                 a = remotingClient.Implementation.A(13, 'b');
                 Console.WriteLine(a);
+                partner.Yield();
                 a = remotingClient.Implementation.A("This is", 1313);
                 Console.WriteLine(a);
                 a = remotingClient.Implementation.A("Just line");

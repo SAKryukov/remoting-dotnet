@@ -8,6 +8,17 @@
 //
 
 namespace Test {
+    using System.Runtime.Serialization;
+    //using 
+    
+    [DataContract(Namespace = "https://www.SAKryukov.org/schema/Remoting.NET")]
+    class Graph {
+    }
+
+    [DataContract(Namespace = "https://www.SAKryukov.org/schema/Remoting.NET")]
+    class Node {
+
+    }
 
     interface ITestContract : Remoting.IContract {
         string A(int a, int b);
@@ -15,6 +26,6 @@ namespace Test {
         string A(string a, int b);
         string A(string a);
         void B(int a, int b);
-    }
+    }    
 
 }

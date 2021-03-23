@@ -26,18 +26,17 @@ namespace Remoting {
             client = new();
             Proxy = DispatchProxy.Create<CONTRACT, ClientProxyBase>();
             ((IClientInfrastructure)Proxy).SetupContext(client, serializer, hostname, port);
-            disposableConnection = new((IConnectable)Proxy);
+            partner = new((IConnectable)Proxy);
         } //Client
 
-        public sealed class DisposableConnection : IDisposable {
-            internal DisposableConnection(IConnectable proxy) { this.proxy = proxy; }
-            void IDisposable.Dispose() {
-                proxy.Disconnect();
-            }
+        public sealed class CooperationProvider : ICooperative {
+            internal CooperationProvider(IConnectable proxy) { this.proxy = proxy; }
+            void ICooperative.Yield() { proxy.Disconnect(); }
+            void IDisposable.Dispose() { proxy.Disconnect(); }
             readonly IConnectable proxy;
-        }
-        readonly DisposableConnection disposableConnection;
-        public System.IDisposable AutoRelease { get { return disposableConnection; } }
+        } //class CooperationProvider
+        readonly CooperationProvider partner;
+        public ICooperative Partner { get { return partner; } }
 
         public CONTRACT Implementation { get { return Proxy; } }
 
@@ -52,6 +51,9 @@ namespace Remoting {
                 if (reader !=null) reader.Dispose();
                 if (writer != null) writer.Dispose();
                 if (stream != null) stream.Dispose();
+                client.Close();
+                client.Dispose();
+                client = new TcpClient();
             } //Disconnect
             void IClientInfrastructure.SetupContext(TcpClient client, DataContractSerializer serializer, string hostname, int port) {
                 this.client = client;
@@ -92,5 +94,7 @@ namespace Remoting {
         readonly CONTRACT Proxy;
 
     } //class Client
+
+    public interface ICooperative : IDisposable { void Yield(); }
 
 }
