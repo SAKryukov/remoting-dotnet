@@ -45,16 +45,17 @@
      id="path9" />
   <text
      xml:space="preserve"
-     style="font-style:normal;font-variant:normal;font-weight:700;font-size:11.25px;line-height:125%;font-family:'Segoe Condensed';text-align:start;letter-spacing:0px;word-spacing:0px;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none"
-     x="105.31967"
-     y="25.043348"
+     style="font-style:normal;font-variant:normal;font-weight:700;font-size:17.3333px;line-height:125%;font-family:'Segoe Condensed';text-align:start;letter-spacing:0px;word-spacing:0px;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none"
+     x="87.888283"
+     y="27.969212"
      id="text15"><tspan
-       x="105.31967"
-       y="25.043348"
-       id="tspan13"><tspan
+       x="87.888283"
+       y="27.969212"
+       id="tspan13"
+       style="font-size:17.3333px"><tspan
          dx="0"
          dy="0"
-         style="font-style:normal;font-variant:normal;font-weight:700;font-size:11.25px;font-family:'Segoe Condensed';fill:#000000"
+         style="font-style:normal;font-variant:normal;font-weight:700;font-size:17.3333px;font-family:'Segoe Condensed';fill:#000000"
          id="tspan11">Server Process</tspan></tspan></text>
   <path
      style="fill:none;stroke:#000000;stroke-width:0.749606px;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
@@ -74,16 +75,17 @@
      id="path23" />
   <text
      xml:space="preserve"
-     style="font-style:normal;font-variant:normal;font-weight:700;font-size:11.25px;line-height:125%;font-family:'Segoe Condensed';text-align:start;letter-spacing:0px;word-spacing:0px;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none"
-     x="491.36694"
-     y="25.043348"
+     style="font-style:normal;font-variant:normal;font-weight:700;font-size:17.3333px;line-height:125%;font-family:'Segoe Condensed';text-align:start;letter-spacing:0px;word-spacing:0px;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none"
+     x="471.28821"
+     y="27.969212"
      id="text29"><tspan
-       x="491.36694"
-       y="25.043348"
-       id="tspan27"><tspan
+       x="471.28821"
+       y="27.969212"
+       id="tspan27"
+       style="font-size:17.3333px"><tspan
          dx="0"
          dy="0"
-         style="font-style:normal;font-variant:normal;font-weight:700;font-size:11.25px;font-family:'Segoe Condensed';fill:#000000"
+         style="font-style:normal;font-variant:normal;font-weight:700;font-size:17.3333px;font-family:'Segoe Condensed';fill:#000000"
          id="tspan25">Client Processes</tspan></tspan></text>
   <path
      style="fill:none;stroke:#000000;stroke-width:0.749606px;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
@@ -133,48 +135,56 @@
      style="fill:#f5ece2;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:0.749606px;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:1, 1;stroke-dashoffset:0;stroke-opacity:1"
      d="m 56.595275,104.57009 h 77.209455 v 31.48346 H 56.595275 Z"
      id="path51" />
-  <text
-     xml:space="preserve"
-     style="font-style:normal;font-variant:normal;font-weight:400;font-size:11.25px;line-height:125%;font-family:'Segoe Condensed';text-align:start;letter-spacing:0px;word-spacing:0px;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none"
-     x="60.343307"
-     y="117.99452"
-     id="text57"><tspan
-       x="60.343307"
-       y="117.99452"
-       id="tspan55"><tspan
-         dx="0"
-         dy="0"
-         style="font-style:normal;font-variant:normal;font-weight:400;font-size:11.25px;font-family:'Segoe Condensed';fill:#000000"
-         id="tspan53">IMyContract</tspan></tspan></text>
-  <text
-     xml:space="preserve"
-     style="font-style:normal;font-variant:normal;font-weight:400;font-size:11.25px;line-height:125%;font-family:'Segoe Condensed';text-align:start;letter-spacing:0px;word-spacing:0px;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none"
-     x="60.343307"
-     y="131.48744"
-     id="text63"><tspan
-       x="60.343307"
-       y="131.48744"
-       id="tspan61"><tspan
-         dx="0"
-         dy="0"
-         style="font-style:normal;font-variant:normal;font-weight:400;font-size:11.25px;font-family:'Segoe Condensed';fill:#000000"
-         id="tspan59">Implementation</tspan></tspan></text>
+  <g
+     id="g974"
+     transform="translate(3.1391657)">
+    <g
+       id="g965">
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-variant:normal;font-weight:400;font-size:11.25px;line-height:125%;font-family:'Segoe Condensed';text-align:start;letter-spacing:0px;word-spacing:0px;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none"
+         x="60.343307"
+         y="117.99452"
+         id="text57"><tspan
+           x="60.343307"
+           y="117.99452"
+           id="tspan55"><tspan
+             dx="0"
+             dy="0"
+             style="font-style:normal;font-variant:normal;font-weight:400;font-size:11.25px;font-family:'Segoe Condensed';fill:#000000"
+             id="tspan53">IMyContract</tspan></tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-variant:normal;font-weight:400;font-size:11.25px;line-height:125%;font-family:'Segoe Condensed';text-align:start;letter-spacing:0px;word-spacing:0px;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none"
+         x="60.343307"
+         y="131.48744"
+         id="text63"><tspan
+           x="60.343307"
+           y="131.48744"
+           id="tspan61"><tspan
+             dx="0"
+             dy="0"
+             style="font-style:normal;font-variant:normal;font-weight:400;font-size:11.25px;font-family:'Segoe Condensed';fill:#000000"
+             id="tspan59">Implementation</tspan></tspan></text>
+    </g>
+  </g>
   <path
      style="fill:#f5ece2;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:0.749606px;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
      d="m 109.06772,107.56851 m 14.24252,13.49291 m 3.74803,-75.710239 h 96.69922 v 34.48189 h -96.69922 z"
      id="path65" />
   <text
      xml:space="preserve"
-     style="font-style:normal;font-variant:normal;font-weight:700;font-size:11.25px;line-height:125%;font-family:'Segoe Condensed';text-align:start;letter-spacing:0px;word-spacing:0px;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none"
+     style="font-style:normal;font-variant:normal;font-weight:bold;font-size:11.25px;line-height:125%;font-family:Arial;text-align:start;letter-spacing:0px;word-spacing:0px;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;-inkscape-font-specification:'Arial Bold Condensed';font-stretch:condensed;"
      x="143.54961"
      y="58.775627"
      id="text71"><tspan
        x="143.54961"
        y="58.775627"
-       id="tspan69"><tspan
+       id="tspan69"
+       style="-inkscape-font-specification:'Arial Bold Condensed';font-family:Arial;font-weight:bold;font-style:normal;font-stretch:condensed;font-variant:normal;"><tspan
          dx="0"
          dy="0"
-         style="font-style:normal;font-variant:normal;font-weight:700;font-size:11.25px;font-family:'Segoe Condensed';fill:#000000"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-size:11.25px;font-family:Arial;fill:#000000;-inkscape-font-specification:'Arial Bold Condensed';font-stretch:condensed;"
          id="tspan67">Implementation</tspan></tspan></text>
   <path
      style="fill:none;stroke:#000000;stroke-width:0.749606px;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
@@ -208,11 +218,11 @@
   <text
      xml:space="preserve"
      style="font-style:normal;font-variant:normal;font-weight:400;font-size:11.25px;line-height:125%;font-family:'Segoe Condensed';text-align:start;letter-spacing:0px;word-spacing:0px;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none"
-     x="471.87717"
-     y="58.775627"
+     x="475.04718"
+     y="57.605286"
      id="text91"><tspan
-       x="471.87717"
-       y="58.775627"
+       x="475.04718"
+       y="57.605286"
        id="tspan89"><tspan
          dx="0"
          dy="0"
@@ -224,16 +234,17 @@
      id="path93" />
   <text
      xml:space="preserve"
-     style="font-style:normal;font-variant:normal;font-weight:700;font-size:11.25px;line-height:125%;font-family:'Segoe Condensed';text-align:start;letter-spacing:0px;word-spacing:0px;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none"
-     x="500.36224"
+     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:condensed;font-size:11.25px;line-height:125%;font-family:'Segoe Condensed';-inkscape-font-specification:'Segoe Condensed,  Condensed';text-align:start;letter-spacing:0px;word-spacing:0px;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none"
+     x="502.70294"
      y="156.22444"
      id="text99"><tspan
-       x="500.36224"
+       x="502.70294"
        y="156.22444"
-       id="tspan97"><tspan
+       id="tspan97"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:condensed;font-family:'Segoe Condensed';-inkscape-font-specification:'Segoe Condensed,  Condensed'"><tspan
          dx="0"
          dy="0"
-         style="font-style:normal;font-variant:normal;font-weight:700;font-size:11.25px;font-family:'Segoe Condensed';fill:#000000"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:condensed;font-size:11.25px;font-family:'Segoe Condensed';-inkscape-font-specification:'Segoe Condensed,  Condensed';fill:#000000"
          id="tspan95">System.Reflection.DispatchProxy</tspan></tspan></text>
   <path
      style="fill:none;stroke:#000000;stroke-width:0.749606px;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
@@ -324,16 +335,17 @@
      id="path141" />
   <text
      xml:space="preserve"
-     style="font-style:normal;font-variant:normal;font-weight:400;font-size:11.25px;line-height:125%;font-family:'Segoe Condensed';text-align:start;letter-spacing:0px;word-spacing:0px;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none"
-     x="181.77953"
-     y="141.23233"
+     style="font-style:normal;font-variant:normal;font-weight:400;font-size:12px;line-height:125%;font-family:'Segoe Condensed';text-align:start;letter-spacing:0px;word-spacing:0px;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none"
+     x="179.04445"
+     y="144.89311"
      id="text147"><tspan
-       x="181.77953"
-       y="141.23233"
-       id="tspan145"><tspan
+       x="179.04445"
+       y="144.89311"
+       id="tspan145"
+       style="font-size:12px"><tspan
          dx="0"
          dy="0"
-         style="font-style:normal;font-variant:normal;font-weight:400;font-size:11.25px;font-family:'Segoe Condensed';text-decoration: underline;text-decoration-line: underline;fill:#000000"
+         style="font-style:normal;font-variant:normal;font-weight:400;font-size:12px;font-family:'Segoe Condensed';text-decoration: underline;text-decoration-line: underline;fill:#000000"
          id="tspan143">ListeningThread</tspan></tspan></text>
   <path
      style="fill:#d0d8f9;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:0.749606px;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
@@ -341,16 +353,17 @@
      id="path149" />
   <text
      xml:space="preserve"
-     style="font-style:normal;font-variant:normal;font-weight:400;font-size:11.25px;line-height:125%;font-family:'Segoe Condensed';text-align:start;letter-spacing:0px;word-spacing:0px;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none"
-     x="182.52913"
-     y="201.20082"
+     style="font-style:normal;font-variant:normal;font-weight:400;font-size:12px;line-height:125%;font-family:'Segoe Condensed';text-align:start;letter-spacing:0px;word-spacing:0px;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none"
+     x="179.72765"
+     y="205.29704"
      id="text155"><tspan
-       x="182.52913"
-       y="201.20082"
-       id="tspan153"><tspan
+       x="179.72765"
+       y="205.29704"
+       id="tspan153"
+       style="font-size:12px"><tspan
          dx="0"
          dy="0"
-         style="font-style:normal;font-variant:normal;font-weight:400;font-size:11.25px;font-family:'Segoe Condensed';text-decoration: underline;text-decoration-line: underline;fill:#000000"
+         style="font-style:normal;font-variant:normal;font-weight:400;font-size:12px;font-family:'Segoe Condensed';text-decoration: underline;text-decoration-line: underline;fill:#000000"
          id="tspan151">ProtocolThread</tspan></tspan></text>
   <path
      style="fill:#d0d8f9;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:0.749606px;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
