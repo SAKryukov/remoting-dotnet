@@ -75,7 +75,7 @@ namespace Test {
         internal static Node second, third, fourth;
     } //DirectedGraph
 
-    interface ITestContract : Remoting.IContract {
+    interface ITestContract {
         string A(int a, int b);
         string P { get; set; }
         string A(string a, int b);
@@ -84,6 +84,6 @@ namespace Test {
         DirectedGraph Connect(DirectedGraph graph, Node tail, Node head);
         DirectedGraph Disconnect(DirectedGraph graph, Node tail, Node head);
         DirectedGraph Insert(DirectedGraph graph, Node tail, Node head);
-    }
+    } //interface ITestContract
 
 }

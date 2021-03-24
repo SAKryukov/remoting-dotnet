@@ -25,7 +25,7 @@ namespace Remoting {
                 public const int First = 0;
                 public const int Last = 0x400 - 1; //1023;
             } //class SystemPorts
-            public static class UserPorts { //registered
+            public static class UserPorts { // registered
                 public const int First = 0x400; //1024;
                 public const int Last = 0xC000 - 1; //49151;
             } //class UserPorts 
@@ -37,11 +37,11 @@ namespace Remoting {
         internal static readonly string NullIndicator = string.Empty;
         internal static readonly string StopIndicator = "s";
         internal const string InterfaceMethodNotFoundIndicator = "?";
+        internal static string FormatNotInterface(System.Type invalidInterface) =>
+            $"{invalidInterface.FullName} is not an interface type";
         internal static string FormatBadInterfaceParameter(System.Type invalidInterface, MethodInfo badMethod, ParameterInfo badParameter) =>
             $"{invalidInterface.FullName}.{badMethod.Name}, parameter {badParameter.ParameterType.FullName} {badParameter.Name} is not an input parameter, cannot be serialized";
     } //class DefinitionSet
-
-    public interface IContract { }
 
     [DataContract(Namespace = "r")]
     class MethodSchema {    
@@ -57,19 +57,22 @@ namespace Remoting {
         [DataMember(Name = "a")]
         internal object[] actualParameters;
     } //class MethodSchema
-
     
     static class Utility {
         class InvalidInterfaceException : System.ApplicationException {
+            internal InvalidInterfaceException(System.Type invalidInterface) :
+                base(DefinitionSet.FormatNotInterface(invalidInterface)) { }
             internal InvalidInterfaceException(System.Type invalidInterface, MethodInfo badMethod, ParameterInfo badParameter) :
                 base (DefinitionSet.FormatBadInterfaceParameter(invalidInterface, badMethod, badParameter)) { }
-        };
+        }; //class InvalidInterfaceException
         internal static TypeEnumerable CollectKnownTypes(System.Type interfaceType) {
+            if (!interfaceType.IsInterface)
+                throw new InvalidInterfaceException(interfaceType);
             TypeSet typeSet = new();
             var interfaces = interfaceType.GetInterfaces();
             foreach (var parentInterfaceType in interfaces)
                 AddMethods(parentInterfaceType, typeSet);
-            AddMethods(interfaceType, typeSet);
+            AddMethods(interfaceType, typeSet); 
             TypeList result = new();
             foreach (var value in typeSet) result.Add(value);
             return result;

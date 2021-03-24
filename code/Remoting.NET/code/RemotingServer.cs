@@ -25,7 +25,7 @@ namespace Remoting {
     using ManualResetEvent = System.Threading.ManualResetEvent;
     using Debug = System.Diagnostics.Debug;
 
-    public class Server<CONTRACT, IMPLEMENTATION> where IMPLEMENTATION : CONTRACT, new() where CONTRACT : IContract {
+    public class Server<CONTRACT, IMPLEMENTATION> where IMPLEMENTATION : CONTRACT, new() where CONTRACT : class {
 
         public Server(int port, IMPLEMENTATION implementor) {
             Debug.Assert(implementor != null);

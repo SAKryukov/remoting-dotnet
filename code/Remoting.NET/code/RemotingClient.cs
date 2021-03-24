@@ -16,7 +16,7 @@ namespace Remoting {
     using StreamWriter = System.IO.StreamWriter;
     using IDisposable = System.IDisposable;
 
-    public class Client<CONTRACT> where CONTRACT : IContract {
+    public class Client<CONTRACT> where CONTRACT : class {
 
         public class MethodNotFoundException : System.ApplicationException {
             public MethodNotFoundException(string method) : base(method) { }
@@ -61,7 +61,7 @@ namespace Remoting {
                 this.callSerializer = serializer;
                 this.hostname = hostname;
                 this.port = port;
-            }
+            } //IClientInfrastructure.SetupContext
             protected override object Invoke(MethodInfo targetMethod, object[] args) {
                 if (!client.Connected) {
                     client.Connect(hostname, port);
