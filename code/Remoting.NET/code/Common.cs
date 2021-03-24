@@ -37,12 +37,14 @@ namespace Remoting {
         internal static readonly string NullIndicator = string.Empty;
         internal static readonly string StopIndicator = "s";
         internal const string InterfaceMethodNotFoundIndicator = "?";
+        internal static string FormatBadInterfaceParameter(System.Type invalidInterface, MethodInfo badMethod, ParameterInfo badParameter) =>
+            $"{invalidInterface.FullName}.{badMethod.Name}, parameter {badParameter.ParameterType.FullName} {badParameter.Name} is not an input parameter, cannot be serialized";
     } //class DefinitionSet
 
     public interface IContract { }
 
     [DataContract(Namespace = "r")]
-    class MethodSchema {
+    class MethodSchema {    
         MethodSchema() { }
         internal MethodSchema(string methodName, object[] actialParameters) {
             this.methodName = methodName;
@@ -56,7 +58,12 @@ namespace Remoting {
         internal object[] actualParameters;
     } //class MethodSchema
 
+    
     static class Utility {
+        class InvalidInterfaceException : System.ApplicationException {
+            internal InvalidInterfaceException(System.Type invalidInterface, MethodInfo badMethod, ParameterInfo badParameter) :
+                base (DefinitionSet.FormatBadInterfaceParameter(invalidInterface, badMethod, badParameter)) { }
+        };
         internal static TypeEnumerable CollectKnownTypes(System.Type interfaceType) {
             TypeSet typeSet = new();
             var interfaces = interfaceType.GetInterfaces();
@@ -78,7 +85,10 @@ namespace Remoting {
                 foreach (var method in methods) {
                     var parameters = method.GetParameters();
                     foreach (var parameter in parameters)
-                        AddType(typeSet, parameter.ParameterType);
+                        if (!parameter.IsOut && !parameter.ParameterType.IsByRef)
+                            AddType(typeSet, parameter.ParameterType);
+                        else
+                            throw new InvalidInterfaceException(type, method, parameter);
                     AddType(typeSet, method.ReturnType);
                 } //loop methods
             } //AddMethods
