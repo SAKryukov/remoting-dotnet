@@ -27,7 +27,7 @@ namespace Remoting {
             serializer = new(typeof(MethodSchema), Utility.CollectKnownTypes(typeof(CONTRACT)));
             Proxy = DispatchProxy.Create<CONTRACT, ClientProxyBase>();
             ((IClientInfrastructure)Proxy).SetupContext(client, serializer, hostname, port);
-            partner = new((IConnectable)Proxy);
+            session = new((IConnectable)Proxy);
         } //Client
 
         public sealed class CooperationProvider : ICooperative {
@@ -36,8 +36,8 @@ namespace Remoting {
             void IDisposable.Dispose() { proxy.Disconnect(); }
             readonly IConnectable proxy;
         } //class CooperationProvider
-        readonly CooperationProvider partner;
-        public ICooperative Partner { get { return partner; } }
+        readonly CooperationProvider session;
+        public ICooperative Session { get { return session; } }
 
         public CONTRACT Implementation { get { return Proxy; } }
 

@@ -18,29 +18,10 @@ namespace Test {
                 "localhost",
                 Remoting.DefinitionSet.PortAssignmentsIANA.DynamicPrivatePorts.First);
 
-            void TestGraphs() {
+            void SimpleDemonstration() {
+                using Remoting.ICooperative partner = remotingClient.Session;
                 Console.WriteLine();
-                Console.WriteLine("Directed graph test:");
-                var graph = DirectedGraph.DemoSample;
-                Console.WriteLine(graph.Visualize());
-                graph = remotingClient.Implementation.Insert(graph, graph.AccessNode, new Node("new"));
-                Console.WriteLine("Insert:");
-                Console.WriteLine(graph.Visualize());
-                graph = DirectedGraph.DemoSample;
-                graph = remotingClient.Implementation.Disconnect(graph, DirectedGraph.second, DirectedGraph.third);
-                Console.WriteLine("Disconnect:");
-                Console.WriteLine(graph.Visualize());
-                graph = DirectedGraph.DemoSample;
-                graph = remotingClient.Implementation.Connect(graph, DirectedGraph.second, graph.AccessNode);
-                Console.WriteLine("Reconnect:");
-                Console.WriteLine(graph.Visualize());
-                Console.WriteLine();
-            } //TestGraphs
-
-            Console.WriteLine("Ready to connect and call first method remotely... To quit, press any key...");
-            try {
-                TestGraphs();
-                using Remoting.ICooperative partner = remotingClient.Partner;
+                Console.WriteLine("String and primitive-type parameters demo:");
                 remotingClient.Implementation.P = "My property P value";
                 Console.WriteLine(remotingClient.Implementation.P);
                 remotingClient.Implementation.B(1, 2);
@@ -56,6 +37,32 @@ namespace Test {
                 remotingClient.Implementation.B(2, 1);
                 Console.WriteLine("B(int, int) called");
                 Console.WriteLine("Done!");
+            } //SimpleDemonstration
+
+            void GraphDemonstration() {
+                using Remoting.ICooperative partner = remotingClient.Session;
+                Console.WriteLine();
+                Console.WriteLine("Directed graph demo:");
+                var graph = DirectedGraph.DemoSample;
+                Console.WriteLine(graph.Visualize());
+                graph = remotingClient.Implementation.Insert(graph, graph.AccessNode, new Node("new"));
+                Console.WriteLine("Insert:");
+                Console.WriteLine(graph.Visualize());
+                graph = DirectedGraph.DemoSample;
+                graph = remotingClient.Implementation.Disconnect(graph, DirectedGraph.second, DirectedGraph.third);
+                Console.WriteLine("Disconnect:");
+                Console.WriteLine(graph.Visualize());
+                graph = DirectedGraph.DemoSample;
+                graph = remotingClient.Implementation.Connect(graph, DirectedGraph.second, graph.AccessNode);
+                Console.WriteLine("Reconnect:");
+                Console.WriteLine(graph.Visualize());
+                Console.WriteLine();
+            } //GraphDemonstration
+
+            Console.WriteLine("Ready to connect and call first method remotely... To quit, press any key...");
+            try {
+                SimpleDemonstration();
+                GraphDemonstration();
             } catch (System.Exception e) {
                 Console.WriteLine($"Is the server started?\n{e.GetType().Name}:\n{e.Message}");
             } //exception
