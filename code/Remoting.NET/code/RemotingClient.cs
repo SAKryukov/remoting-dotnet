@@ -30,13 +30,13 @@ namespace Remoting {
             session = new((IConnectable)Proxy);
         } //Client
 
-        public sealed class CooperationProvider : ICooperative {
-            internal CooperationProvider(IConnectable proxy) { this.proxy = proxy; }
+        public sealed class SessionImplementation : ICooperative {
+            internal SessionImplementation(IConnectable proxy) { this.proxy = proxy; }
             void ICooperative.Yield() { proxy.Disconnect(); }
             void IDisposable.Dispose() { proxy.Disconnect(); }
             readonly IConnectable proxy;
         } //class CooperationProvider
-        readonly CooperationProvider session;
+        readonly SessionImplementation session;
         public ICooperative Session { get { return session; } }
 
         public CONTRACT Implementation { get { return Proxy; } }
