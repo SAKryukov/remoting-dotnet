@@ -31,8 +31,8 @@ namespace Test {
                 Console.WriteLine("Disconnect:");
                 Console.WriteLine(graph.Visualize());
                 graph = DirectedGraph.DemoSample;
-                graph = remotingClient.Implementation.Connect(graph, graph.AccessNode, DirectedGraph.second);
-                Console.WriteLine("Connect:");
+                graph = remotingClient.Implementation.Connect(graph, DirectedGraph.second, graph.AccessNode);
+                Console.WriteLine("Reconnect:");
                 Console.WriteLine(graph.Visualize());
                 Console.WriteLine();
             } //TestGraphs
