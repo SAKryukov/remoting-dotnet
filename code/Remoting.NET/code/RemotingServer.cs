@@ -50,7 +50,7 @@ namespace Remoting {
                 var generator = result.GetILGenerator();
                 for (var index = 0; index < parameters.Length; ++index)
                     generator.Emit(OpCodes.Ldarg_S, index);
-                generator.Emit(OpCodes.Call, method);
+                generator.Emit(method.IsVirtual ? OpCodes.Callvirt : OpCodes.Call, method);
                 generator.Emit(OpCodes.Ret);
                 return result;
             } //CreateCaller

@@ -18,7 +18,7 @@ namespace Test {
             get { return pValue; }
             set { pValue = value; }
         }
-        public string A(string a, int b) {
+        public virtual string A(string a, int b) {
             return $"Second A: a: {a}, b:{b}";
         }
         string pValue = null;

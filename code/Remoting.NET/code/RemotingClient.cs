@@ -25,9 +25,9 @@ namespace Remoting {
         public Client(string hostname, int port) {
             client = new();
             serializer = new(typeof(MethodSchema), Utility.CollectKnownTypes(typeof(CONTRACT)));
-            Proxy = DispatchProxy.Create<CONTRACT, ClientProxyBase>();
-            ((IClientInfrastructure)Proxy).SetupContext(client, serializer, hostname, port);
-            session = new((IConnectable)Proxy);
+            proxy = DispatchProxy.Create<CONTRACT, ClientProxyBase>();
+            ((IClientInfrastructure)proxy).SetupContext(client, serializer, hostname, port);
+            session = new((IConnectable)proxy);
         } //Client
 
         public sealed class SessionImplementation : ICooperative {
@@ -39,7 +39,7 @@ namespace Remoting {
         readonly SessionImplementation session;
         public ICooperative Session { get { return session; } }
 
-        public CONTRACT Implementation { get { return Proxy; } }
+        public CONTRACT Proxy { get { return proxy; } }
 
         interface IClientInfrastructure {
             void SetupContext(TcpClient client, DataContractSerializer serializer, string hostname, int port);
@@ -92,7 +92,7 @@ namespace Remoting {
 
         readonly DataContractSerializer serializer;
         readonly TcpClient client;
-        readonly CONTRACT Proxy;
+        readonly CONTRACT proxy;
 
     } //class Client
 
