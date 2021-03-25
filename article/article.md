@@ -12,11 +12,11 @@ Original publication:
 
 TCP-based remoting to replace deprecated remoting or WCF for .NET Core, .NET 5, and later versions --- in only 3 C# files
 
-*As binary serializer is deprecated, marshalling is based on DataContract. It allows to pass any data structures as method parameters and return values, even object graphs with cyclic references. Multiple clients and parallel execution are supported, as well as properties and methods with any input parameters. The service contract is based on a custom interface provide by a developer; absolutely no attributes or base interfaces/classes are required. Required are only two attributes for structural parameter/return types: [DataContract] and [DataMember].*
+*As binary serializer is deprecated, marshalling is based on DataContract. It allows to pass any data structures as method parameters and return values, even object graphs with cyclic references. Parallel execution and multiple clients are supported, as well as properties and methods with any input parameters. The service contract is based on a custom interface provided by a developer; absolutely no attributes or base interfaces/classes are required. Required are only two attributes for structural parameter/return types: [DataContract] and [DataMember].*
 
 <!-- copy to CodeProject from here ------------------------------------------->
 
-<ul class="download"><li><a href="5291705/Working/JavaScript-Playground.zip">Download source code — 23.4 KB</a></li></ul>
+<ul class="download"><li><a href="???Remoting.NET.zip">Download source code — 17 KB</a></li></ul>
 
 ![Sample](diagram.png) {id=image-diagram}
 
