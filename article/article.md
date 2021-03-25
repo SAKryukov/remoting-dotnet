@@ -33,15 +33,15 @@ TCP-based remoting to replace deprecated remoting or WCF for .NET Core, .NET 5, 
 
 In .NET Core and .NET 5, old good remoting and WCF have been deprecated.
 
-How to develope software without remoting? Well, there are 3rd-party remoting or RPC frameworks, but 3rd-party is 3rd-party. But how about taking just 3 my C# files and having it all in no time, with pretty universal and flexible features?
+How to develop software without remoting? Well, there are 3rd-party remoting or RPC frameworks, but 3rd-party is 3rd-party. But how about taking just 3 my C# files and having it all in no time, with pretty universal and flexible features?
 
 ## Usage
 
-First, the developer of applications needs to create some definition common for the client and server parts. This is some *service contract* and a port number.
+First, the developer of applications needs to create some definitions common for the client and server parts. This is some *service contract* and a port number.
 
 The service contract is just the application-specific interface type. It does not need any attributes and does not have to be derived from any particular interface.
 
-Then, on the server side this interface should be implemented by some class that can be called, for example, `Implementation`. A single instance of this class needs to be created. Now the generic `Server` class should connect this implementation with a network. Assuming the `port` is the service port number, and `Implementation` implements the interface `IMyContract`, this is how it is done:
+Then, on the server side, this interface should be implemented by some class that can be called, for example, `Implementation`. A single instance of this class needs to be created. Now the generic `Server` class should connect this implementation with a network. Assuming the `port` is the service port number, and `Implementation` implements the interface `IMyContract`, this is how it is done:
 
 ~~~{lang=C#}{id=code-new-server}
 var server = new Remoting.Server<IMyContract, Implementation>(
@@ -51,7 +51,7 @@ var server = new Remoting.Server<IMyContract, Implementation>(
 
 The fact that the class `Implementation` implements `IMyContract` is guaranteed by the [constraints on the generic type parameters](https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/generics/constraints-on-type-parameters). The fact that the service contract type is an interface is [validated during runtime](#heading-rejection-of-invalid-contract-interfaces).
 
-This is a constructor call which performs the reflection of both `IMyContract` and `Implementation` types and emits the network-enabled proxy object on the fly using `Reflection.Emit`. Essentially, this object can convert data into the calls to the methods of the `Implementation` instance passed as a second parameter of the `Implementation` constructor, obtain the return object of each call and convert it to data. This input data is received from or sent to a network stream.
+The call to the `Remoting.Server<>` constructor performs the reflection of both `IMyContract` and `Implementation` types and emits the network-enabled proxy object on the fly using `Reflection.Emit`. Essentially, this object can convert data into the calls to the methods of the `Implementation` instance passed as a second parameter of the `Implementation` constructor, obtain the return object of each call and convert it to data. This input data is received from or sent to a network stream.
 
 After the call to the constructor, the `server.Start()` can be called. This call is non-blocking, as all the operations are performed in two separate threads, one for connection and another for the remote method call protocol.
 
@@ -70,7 +70,7 @@ client.Proxy.B(/* ... */);
 var objectGraph = client.Proxy.Transform(/* ... */)
 ~~~
 
-The structured data for the parameters or the returned object should be defined via some `DataContract`. The client and server are totally agnostic to the detail of the data contract, they are discovered automatically using reflection.
+The structured data for the parameters or the returned object should be defined via some `DataContract`. The client and server are agnostic to the detail of the data contract, they are discovered automatically using reflection.
 
 The service contract interface can use any data types for the parameters, returned objects, and properties. However, please see the [limitations](#heading-limitations).
 
@@ -87,23 +87,23 @@ void SomeSession() {
 }
 ~~~
 
-The usage of sessions helps to improve performance of the service and needs a separate discussion. It represents the cooperation model.
+The usage of sessions helps to improve the performance of the service and needs a separate discussion. It represents the cooperation model.
 
 ## Parallel Execution and Cooperation Model
 
-It is obvious that when we have more than one client running in parallel, one client can block the execution of another one. It happens because the `Stream.Read` methods are blocking. When a server protocol thread is blocked at a `Stream.Read` call, another client can be blocked at a `Stream.Read` call of a proxy. This situation will continue until the blocking client completes the operations on its remote call.
+It is obvious that when we have more than one client running in parallel, one client can block the execution of another one. It happens because the `Stream.Read` methods are blocking. When a server protocol thread is blocked at a `Stream.Read` call, another client can be blocked at a call to `Stream.Read` of a proxy. This situation will continue until the blocking client completes the operations on its remote call.
 
-There are different solutions to this problem. Usually we can see the advice to create a separate thread per client at the moment when a client connects. So a listening thread should create unlimited number of different threads. I also used this approach, but it was developed for a particular system, when the maximum number of clients was known in advance.
+There are different solutions to this problem. Usually, we can see the advice to create a separate thread per client at the moment when a client connects. So a listening thread should create an unlimited number of different threads. I also used this approach, but it was developed for a particular system, for which the maximum number of clients was known in advance.
 
-If is good or bad? In the situation when the maximum number of clients is known or predictable, this is quite good. However, what can happen in a general case? It is possible to block the functionality of such a server by overwhelming number of threads created in response to a big number of connections to the same TCP channel; and it can happen by accident. This kind of an accidental or malicious attack would not require too much resources on the client side, because a client thread can just connect and write nothing to its network stream, staying permanently in [a wait state](https://en.wikipedia.org/wiki/Wait_state).
+Is it good or bad? In the situation when the maximum number of clients is known or predictable, this is quite good. However, what can happen in a general case? It is possible to block the functionality of such a server by an overwhelming number of threads created in response to a big number of connections to the same TCP channel, and it can happen by accident. This kind of accidental or malicious attack would not even require too expensive resources on the client side, because a client thread can just connect and write nothing to its network stream, staying permanently in [a wait state](https://en.wikipedia.org/wiki/Wait_state).
 
-There is also a near-opposite approach: a client connects to the server only for a short period of time. This approach could be called cooperative: one client waits until another thread completes the operation, but all the clients should guarantee reasonably fast execution of the fragment of code dealing with the service. Note that nothing bad can happen if a client application breaks or its system, say, looses power or otherwise disconnects: it disconnects the client, and other clients still can connect. In terms of RPC it can be just one remote call, which means one write and one read operation. This model is pretty reliable, but wasteful in terms of the usage of the network resources. Indeed, the traffic can become way too fine-granular. Typically, more optimal network performance is achieved for much bigger data packages. Of course, in our case it depends on the number of parameters and the size of data.
+There is also a near-opposite approach: a client connects to the server only for a short time. This approach could be called *cooperative*: one client waits until another thread completes the operation, but all the clients should guarantee reasonably fast execution of the fragment of code dealing with the service. Note that nothing bad can happen if a client application breaks or its system, say, loses power or otherwise disconnects: it disconnects the client, and other clients still can connect. In terms of [RPC](https://en.wikipedia.org/wiki/RPC), it can be just one remote call, which means one write and one read operation. This model can be pretty reliable but wasteful in terms of the usage of the network resources. Indeed, the traffic can become way too fine-granular. Typically, more optimal network performance is achieved for much bigger data packages. Of course, in our case, it depends on the number of parameters and the size of the data.
 
-Also, some combined approaches are possible: a fixed-size thread pool, and the like.
+Also, some combined approaches are possible: a fixed-size thread pool and the like.
 
 For the remoting presenting in this article, I developed a combined cooperative approach. On the server side, only two threads are added during runtime: a listening thread and a protocol thread.
 
-A client should cooperate and disconnect when the service is not used, but the session can last longer than it is required for a single remote method call. The session is controlled in an automated way. First of all, the connection is done on a call. When a remote call needs a connection, the proxy implementation checks up if a connection is already open, otherwise the client is connected or reconnected. A disconnection can happen in different ways. First of all, a session object implements the interface `System.IDisposable`, so it can automatically disconnect at the end of the current context if created via the `using` statement. Additionally, it implements the interface `ICooperative` and can call the method `ICooperative.Yield` to allow other clients to pass possibly somewhere in the middle of some client method. The server's protocol thread count the number of "served" calls per client and prioritizes the clients based on this count.
+A client should cooperate and disconnect when the service is not used, but the session can last longer than it is required for a single remote method call. The session is controlled in an automated way. First of all, the connection is done on a call. When a remote call needs a connection, the proxy implementation checks up if a connection is already open, otherwise. the client is connected or re-connected. Disconnection can happen in different ways. First of all, a session object implements the interface `System.IDisposable`, so it can automatically disconnect at the end of the current context if created via the `using` statement. Additionally, it implements the interface `ICooperative` and can call the method `ICooperative.Yield` to allow other clients to pass possibly somewhere in the middle of some client method. The server's protocol thread counts the number of "served" calls per client and prioritizes the clients based on this count.
 
 ## Implementation
 
@@ -111,7 +111,7 @@ The [diagram on top](#image-diagram) roughly illustrates the principles of the i
 
 ### Server: Reflection
 
-For the server side, we need to dynamically [emit the code](#heading-server3a-emitting-the-method-code) for some object which can identify an implementation class method by the data received from network and call this method with appropriate actual parameters obtained from this data. Reflection is more expensive than other parts of this communication, so using `System.Reflection.Emit` is important to make sure the information about detail of all the methods is reused during remote method calls.
+For the server side, we need to dynamically [emit the code](#heading-server3a-emitting-the-method-code) for some object which can identify an implementation class method by the data received from the network and call this method with appropriate actual parameters obtained from this data. Reflection is more expensive than other parts of this communication, so using `System.Reflection.Emit` is important to make sure the information about the detail of all the methods is reused during remote method calls.
 
 Before emitting code, we need to collect all required information. One problem is that we need to reflect only the methods of the service contract interface. On the other hands, the code should be emitted based on `System.Reflection.MethodInfo` of the implementing class, not the interface. Do to so, we need to reflect all the methods of the service contract interface and, for each method, reflect a corresponding method of the implementing class. The notion of the "corresponding method" here is somewhat tricky. The following technique is used:
 
@@ -147,11 +147,11 @@ foreach (var method in methods) {
 }
 ~~~
 
-In this fragment, the collection `methods` is obtained from the service contract interface type recursively, to include all the methods of its base interface types. Note that it transparently includes interface properties, because each property is accessed by its getter, or setter, or both.
+In this fragment, the collection `methods` are obtained from the service contract interface type recursively, to include all the methods of its base interface types. Note that it transparently includes interface properties, because each property is accessed by its getter, or setter, or both.
 
-One problem in the identification of the implementation method is that different methods can have identical names. This problem is solved by supplying fully-qualified name of the interface method with the method profiles, also identified by the methods' parameter information.
+One problem in the identification of the implementation method is that different methods can have identical names. This problem is solved by supplying a fully-qualified name of the interface method with the method profiles, also identified by the methods' parameter information.
 
-The nastier problem is this: the same implementation class can still implement two different methods implementing the same interface methods. This situation is possible in only one case, when one methods is an implicit implementation of an interface method, and another one is an explicit implementation.
+The nastier problem is this: the same implementation class can still implement two different methods implementing the same interface methods. This situation is possible in only one case: when one method is an implicit implementation of an interface method, and another one is an explicit implementation of the same method.
 
 When we program a call to the method in a "usual" way, we can see, that the priority is given to the implicit implementation. When we call the method using "System.Reflection" and "System.Reflection.Emit", the preference is our choice. In the code [shown above](#code-reflection), we mimic the "usual" way.
 
@@ -159,9 +159,9 @@ Based on the collected metadata, we emit some code for each method and store it 
 
 ### Server: Emitting the Method Code
 
-Each method created with `System.Reflection.Emit` should do only one thing: call the corresponding method of the service contract interface implementing class. This is important, because we don't know statically which method is called, as we receive the request from a client in the form of some data. We emit the required methods in the form of [System.Reflection.Emit.DynamicMethod](https://docs.microsoft.com/en-us/dotnet/api/system.reflection.emit.dynamicmethod?view=net-5.0).
+Each method created with `System.Reflection.Emit` should do only one thing: call the corresponding method of the service contract interface implementing class. This is important because we don't know statically which method is called, as we receive the request from a client in the form of some data. We emit the required methods in the form of [System.Reflection.Emit.DynamicMethod](https://docs.microsoft.com/en-us/dotnet/api/system.reflection.emit.dynamicmethod?view=net-5.0).
 
-The emitted code is fairly simple: we put the method arguments identified by their types on the evaluation stack and emit a call or a virtual method call. As all methods, being based on an interface, are always the instance methods, we also put "this" as the first argument:
+The emitted code is fairly simple: we put the method arguments identified by their types on the evaluation stack and emit a call or a virtual method call. As all methods based on an interface are always the instance methods, we also put "this" as the first argument:
 
 ~~~{lang=C#}{id=code-reflection-emit}
 static DynamicMethod CreateCaller(System.Type implementor, MethodInfo method)
@@ -187,7 +187,7 @@ static DynamicMethod CreateCaller(System.Type implementor, MethodInfo method)
 
 ### Collection of Known Types
 
-Both client and server parts need an addition portion of reflection. It is needed to support structural data types passed as method parameters. All the parameters, with the fully-qualified interface method names and profiles are marshalled using the same type passed to the constructor of `System.Runtime.Serialization.DataContractSerializer`:
+Both client and server parts need an additional portion of reflection. It is needed to support structural data types passed as method parameters. All the parameters, with the fully-qualified interface method names and profiles, are marshalled using the same type passed to the constructor of `System.Runtime.Serialization.DataContractSerializer`:
 
 ~~~{lang=C#}{id=code-data-contract}
 using System.Runtime.Serialization;
@@ -211,7 +211,7 @@ class MethodSchema {
 
 ~~~
 
-This data structure is fixed because the actual data type are not statically known during the communication. The workaround is to collect all these types in advance from the service contract interface type and pass the collection as the `knownType` parameter to the constructor of `DataContractSerializer`:
+This data structure is fixed because the actual data types are not statically known during the communication. The workaround is to collect all these types in advance from the service contract interface type and pass the collection as the `knownType` parameter to the constructor of `DataContractSerializer`:
 
 ~~~{lang=C#}{id=code-create-serialize}
 System.Runtime.Serialization.DataContractSerializer serializer
@@ -345,7 +345,7 @@ Another interface, `IConnectable`, is used to add some session control.
 
 ### Session Control
 
-From the `ClientProxy` [code](#code-client-proxy), we can see that the client is connected to the server TCP channel on the remote method call, it it is detected that the connection is currently not available.
+From the `ClientProxy` [code](#code-client-proxy), we can see that the client is connected to the server TCP channel on the remote method call if it is detected that the connection is currently not available.
 
 A temporary disconnection is implemented via the interface `IConnectable`. And, finally, the temporary disconnection can be requested be the code using `Remoting.Client` ether explicitly, via the interface `ICooperative` or automatically, via the interface `System.IDisposable`:
 
@@ -364,13 +364,13 @@ public ICooperative Session { get { return session; } }
 public interface ICooperative : IDisposable { void Yield(); }
 ~~~
 
-This explains the client behavior int the code sample [shown above](#code-sample-session) and the [cooperation model](#heading-parallel-execution-and-cooperation-model).
+This explains the client behavior in the code sample [shown above](#code-sample-session) and the [cooperation model](#heading-parallel-execution-and-cooperation-model).
 
 ## Compatibility and Build
 
 The code is tested on .NET v.5 and should be compatible with the earlier .NET Core versions on any platform.
 
-The build does not require Visual Studio or any other IDE, only .NET is required. The batch build is created for Windows and can easily be added for any other system, such as Linux. Essentially, this is just
+The build does not require Visual Studio or any other IDE, only .NET is required. The batch build is created for Windows and can easily be added to any other system, such as Linux. Essentially, this is just
 
 ~~~
 dotnet build %solution% -c Release
@@ -384,10 +384,10 @@ where `solution` is the .sln file name.
 * This framework represents a pure dumb client-server system and the [pull technology](https://en.wikipedia.org/wiki/Pull_technology): there are no callbacks and no [server push](https://en.wikipedia.org/wiki/Push_technology).
 * Therefore, it does not support .NET events
 * The parameters of the contract interface methods [cannot](#code-validate-interface-parameter-types) be `out` or `ref` parameters.
-* The parameter types are treated as pure data types; in particular, they cannot be types, delegate instances, lambda expressions and the like; in other words, all the parameters and return objects should be serializable via the `DataContract`.
+* The parameter types are treated as pure data types; in particular, they cannot be `System.Types` objects, delegate instances, lambda expressions, and the like; in other words, all the parameters and return objects should be serializable via the `DataContract`.
 
 ## Conclusion
 
 Even though I've started to work at similar architectures years ago, the code presented here is still highly experimental.
 
-I would be much grateful for any kinds of feedback, and especially for criticism.
+I would be much grateful for any kind of feedback, and especially for criticism.
