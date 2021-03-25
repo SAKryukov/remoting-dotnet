@@ -49,6 +49,8 @@ var server = new Remoting.Server<IMyContract, Implementation>(
     new Implementation());
 ~~~
 
+The fact that the class `Implementation` implements `IMyContract` is guaranteed by the [constraints on the generic type parameters](https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/generics/constraints-on-type-parameters). The fact that the contract type is an interface is [validated during runtime](#heading-rejection-of-invalid-contract-interfaces).
+
 This is a constructor call which performs the reflection of both `IMyContract` and `Implementation` types and emits the network-enabled proxy object on the fly using `Reflection.Emit`. Essentially, this object can convert data into the calls to the methods of the `Implementation` instance passed as a second parameter of the `Implementation` constructor, obtain the return object of each call and convert it to data. This input data is received from or sent to a network stream.
 
 After the call to the constructor, the `server.Start()` can be called. This call is non-blocking, as all the operations are performed in two separate threads, one for connection and another for the remote method call protocol.
