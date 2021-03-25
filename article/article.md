@@ -43,7 +43,7 @@ The service contract is just the application-specific interface type. It does no
 
 Then, on the server side this interface should be implemented by some class that can be called, for example, `Implementation`. A single instance of this class needs to be created. Now the generic `Server` class should connect this implementation with a network. Assuming the `port` is the service port number, and `Implementation` implements the interface `IMyContract`, this is how it is done:
 
-~~~
+~~~{lang=C#}{id=code-new-server}
 var server = new Remoting.Server<IMyContract, Implementation>(
     port,
     new Implementation());
@@ -57,13 +57,13 @@ After the call to the constructor, the `server.Start()` can be called. This call
 
 On the client side, a client object is created based on the same interface and a port number:
 
-~~~
+~~~{lang=C#}{id=code-new-client}
 var client = new Remoting.Client<IMyContract>(serverHostName, port);
 ~~~
 
 Then the client `Proxy` property can be used for the remote calls corresponding to the contract interface method:
 
-~~~
+~~~{lang=C#}{id=code-sample-client}
 client.Proxy.A(/* ... */);
 client.Proxy.B(/* ... */);
 // ...
@@ -76,7 +76,7 @@ The contract interface can use any data types for the parameters, returned objec
 
 Typically, the flow of remote calls should be wrapped in some functions grouping several calls and representing some session:
 
-~~~
+~~~{lang=C#}{id=code-sample-session}
 void SomeSession() {
     using Remoting.ICooperative session = remotingClient.Session;
     client.Proxy.A(/* ... */);
@@ -244,7 +244,7 @@ if (!interfaceType.IsInterface)
     throw new InvalidInterfaceException(interfaceType);
 ~~~
 
-In addition to this limitation, `out` or `ref` parameters cannot be used. This is also validated. Given the set of `System.Type` instances `typeSet`, we have:
+In addition to this limitation, `out` or `ref` parameters cannot be used. This is also validated. Given the set of `System.Type` instances `typeSet` and a collection of parameters, we have:
 
 ~~~{lang=C#}{id=code-validate-interface-parameter-types}
 static void AddType(TypeSet typeSet, System.Type type) {
@@ -268,9 +268,114 @@ Note that the primitive types and the string type are valid but not collected as
 
 ### Client: Creation of Proxy
 
+We could create a proxy implementing the service contract interface using `System.Reflection` and `System.Reflection.Emit`, pretty much the same way we emitted [dynamic methods](https://docs.microsoft.com/en-us/dotnet/api/system.reflection.emit.dynamicmethod?view=net-5.0) on the server side. With the client site, we got a lot more luck though.
+
+For .NET Core and .NET 5, this work is already done in the upgraded version of reflection. The newer abstract class [System.Reflection.DispatchProxy](https://docs.microsoft.com/en-us/dotnet/api/system.reflection.dispatchproxy?view=net-5.0) does it all.
+
+We need to override the method `System.Reflection.DispatchProxy.Invoke` and implement the network transport per each call:
+
+~~~{lang=C#}{id=code-client-proxy}
+interface IClientInfrastructure { /* ... */ }
+// ...
+public interface IConnectable { void Disconnect(); }
+
+public class ClientProxy :
+    DispatchProxy, IClientInfrastructure, IConnectable {
+    void IConnectable.Disconnect() {
+        if (reader !=null) reader.Dispose();
+        if (writer != null) writer.Dispose();
+        if (stream != null) stream.Dispose();
+        client.Close();
+        client.Dispose();
+        client = new TcpClient();
+    }
+    void IClientInfrastructure.SetupContext(
+        TcpClient client,
+        DataContractSerializer serializer,
+        string hostname, int port)
+    {
+        this.client = client;
+        // ...
+    }
+    protected override object Invoke(MethodInfo targetMethod, object[] args) {
+        if (!client.Connected) {
+            client.Connect(hostname, port);
+            stream = client.GetStream();
+            reader = new(stream);
+            writer = new(stream);   
+            writer.AutoFlush = true;
+        } //if
+        var methodSchema = new MethodSchema(targetMethod.ToString(), args);
+        string requestLine =
+            Utility.ObjectToString(callSerializer, methodSchema);
+        writer.WriteLine(requestLine);
+        string responseLine = reader.ReadLine();
+        if (responseLine == DefinitionSet.NullIndicator)
+            return null;
+        else
+        if (responseLine == DefinitionSet.InterfaceMethodNotFoundIndicator)
+            throw new MethodNotFoundException(methodSchema.MethodName);
+        DataContractSerializer returnSerializer =
+            new(targetMethod.ReturnType);
+        return Utility.StringToObject(returnSerializer, responseLine);
+    } //Invoke
+    TcpClient client;
+    string hostname;
+    int port;
+    DataContractSerializer callSerializer;
+    Stream stream;
+    StreamReader reader;
+    StreamWriter writer;
+}
+~~~
+
+Note the additional interfaces implemented by this class: `IClientInfrastructure` and `IConnectable`.
+
+The interface `IClientInfrastructure` is used to pass required context objects to the proxy instance. It cannot be done directly, because the instance is created by `System.Reflection.DispatchProxy`. So, we have:
+
+~~~{lang=C#}{id=code-client-proxy-instance}
+proxy = DispatchProxy.Create<CONTRACT, ClientProxy>();
+((IClientInfrastructure)proxy).
+    SetupContext(client, serializer, hostname, port);
+~~~
+
+Another interface, `IConnectable`, is used to add some session control.
+
 ### Session Control
 
-## Compatibility, Build and Testing
+From the `ClientProxy` [code](#code-client-proxy), we can see that the client is connected to the server TCP channel on the remote method call, it it is detected that the connection is currently not available.
+
+A temporary disconnection is implemented via the interface `IConnectable`. And, finally, the temporary disconnection can be requested be the code using `Remoting.Client` ether explicitly, via the interface `ICooperative` or automatically, via the interface `System.IDisposable`:
+
+~~~{lang=C#}{id=code-client-proxy-instance}
+public sealed class SessionImplementation : ICooperative {
+    internal SessionImplementation(IConnectable proxy) { this.proxy = proxy; }
+    void ICooperative.Yield() { proxy.Disconnect(); }
+    void IDisposable.Dispose() { proxy.Disconnect(); }
+    readonly IConnectable proxy;
+} //class CooperationProvider
+readonly SessionImplementation session;
+public ICooperative Session { get { return session; } }
+
+//...
+
+public interface ICooperative : IDisposable { void Yield(); }
+~~~
+
+This explains the client behavior int the code sample [shown above](#code-sample-session) and the [cooperation model](#heading-parallel-execution-and-cooperation-model).
+
+## Compatibility and Build
+
+The code is tested on .NET v.5 and should be compatible with the earlier .NET Core versions on any platform.
+
+The build does not require Visual Studio or any other IDE, only .NET is required. The batch build is created for Windows and can easily be added for any other system, such as Linux. Essentially, this is just
+
+~~~
+dotnet build %solution% -c Release
+dotnet build %solution% -c Debug
+~~~
+
+where `solution` is the .sln file name.
 
 ## Limitations
 
