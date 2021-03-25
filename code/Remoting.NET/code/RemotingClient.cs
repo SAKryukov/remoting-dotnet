@@ -25,7 +25,7 @@ namespace Remoting {
         public Client(string hostname, int port) {
             client = new();
             serializer = new(typeof(MethodSchema), Utility.CollectKnownTypes(typeof(CONTRACT)));
-            proxy = DispatchProxy.Create<CONTRACT, ClientProxyBase>();
+            proxy = DispatchProxy.Create<CONTRACT, ClientProxy>();
             ((IClientInfrastructure)proxy).SetupContext(client, serializer, hostname, port);
             session = new((IConnectable)proxy);
         } //Client
@@ -47,7 +47,7 @@ namespace Remoting {
 
         public interface IConnectable { void Disconnect(); }
 
-        public class ClientProxyBase : DispatchProxy, IClientInfrastructure, IConnectable {
+        public class ClientProxy : DispatchProxy, IClientInfrastructure, IConnectable {
             void IConnectable.Disconnect() {
                 if (reader !=null) reader.Dispose();
                 if (writer != null) writer.Dispose();
@@ -88,7 +88,7 @@ namespace Remoting {
             Stream stream;
             StreamReader reader;
             StreamWriter writer;
-        } //class ClientProxyBase
+        } //class ClientProxy
 
         readonly DataContractSerializer serializer;
         readonly TcpClient client;
