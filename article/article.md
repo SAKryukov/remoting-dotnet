@@ -44,7 +44,7 @@ The service contract is just the application-specific interface type. It does no
 Then, on the server side, this interface should be implemented by some class that can be called, for example, `Implementation`. A single instance of this class needs to be created. Now the generic `Server` class should connect this implementation with a network. Assuming the `port` is the service port number, and `Implementation` implements the interface `IMyContract`, this is how it is done:
 
 ~~~{lang=C#}{id=code-new-server}
-var server = new Remoting.Server<IMyContract, Implementation>(
+var server = new Remoting.Server&lt;IMyContract, Implementation&gt;(
     port,
     new Implementation());
 ~~~
@@ -58,7 +58,7 @@ After the call to the constructor, the `server.Start()` can be called. This call
 On the client side, a client object is created based on the same interface and a port number:
 
 ~~~{lang=C#}{id=code-new-client}
-var client = new Remoting.Client<IMyContract>(serverHostName, port);
+var client = new Remoting.Client&lt;IMyContract&gt;(serverHostName, port);
 ~~~
 
 Then the client `Proxy` property can be used for the remote calls corresponding to the service contract interface method:
@@ -227,14 +227,14 @@ During the reflection using the method `Utility.CollectKnownTypes`, the service 
 First of all, it should be validated that the service contract interface type is the interface type. Generic parameter constrain cannot ensure that. The only useful constraint for this type is `class`:
 
 ~~~{lang=C#}{id=code-genertic-constraints-server}
-public class Server<CONTRACT, IMPLEMENTATION>
+public class Server&lt;CONTRACT, IMPLEMENTATION&gt;
     where IMPLEMENTATION : CONTRACT, new() where CONTRACT : class {
     /* ... */
 }
 ~~~
 
 ~~~{lang=C#}{id=code-genertic-constraints-client}
-public class Client<CONTRACT> where CONTRACT : class {
+public class Client&lt;CONTRACT&gt; where CONTRACT : class {
     /* ... */
 }
 ~~~
@@ -336,7 +336,7 @@ Note two additional interfaces implemented by this class: `IClientInfrastructure
 The interface `IClientInfrastructure` is used to pass required context objects to the proxy instance. It cannot be done directly, because the instance is created by `System.Reflection.DispatchProxy`. So, we have:
 
 ~~~{lang=C#}{id=code-client-proxy-instance}
-proxy = DispatchProxy.Create<CONTRACT, ClientProxy>();
+proxy = DispatchProxy.Create&lt;CONTRACT, ClientProxy&gt;();
 ((IClientInfrastructure)proxy).
     SetupContext(client, serializer, hostname, port);
 ~~~
