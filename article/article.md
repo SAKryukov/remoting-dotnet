@@ -347,7 +347,7 @@ Another interface, `IConnectable`, is used to add some session control.
 
 From the `ClientProxy` [code](#code-client-proxy), we can see that the client is connected to the server TCP channel on the remote method call if it is detected that the connection is currently not available.
 
-A temporary disconnection is implemented via the interface `IConnectable`. And, finally, the temporary disconnection can be requested be the code using `Remoting.Client` ether explicitly, via the interface `ICooperative` or automatically, via the interface `System.IDisposable`:
+A temporary disconnection is implemented via the interface `IConnectable`. And, finally, the temporary disconnection can be requeste    d be the code using `Remoting.Client` ether explicitly, via the interface `ICooperative` or automatically, via the interface `System.IDisposable`:
 
 ~~~{lang=C#}{id=code-client-proxy-instance}
 public sealed class SessionImplementation : ICooperative {
@@ -365,6 +365,42 @@ public interface ICooperative : IDisposable { void Yield(); }
 ~~~
 
 This explains the client behavior in the code sample [shown above](#code-sample-session) and the [cooperation model](#heading-parallel-execution-and-cooperation-model).
+
+## Illustration: Directed Graph
+
+Let's test that we can implement any data types and pass them through the remoting service contract, even the object graphs with cyclic referenced. A natural example for such object graphs would be... well, some model of directed graphs.
+
+Let's look at the definition of two classes, `DirectedGraph` and `Node` found in "code/Test/ClientServer.code/Common.cs". They are `DataContract`-enabled and sufficient for the simplest implementation of the directed graph model.
+
+Let's build an initial graph on the client side and define some simple graph transformations, the methods `Insert`, `Connect` and `Disconnect`. It would be the easiest to implement them on the client side, too, but we are not looking the easy ways. Our goal is to test the power of `Remoting`. So, we add these methods in the service contract interface and implement them on the server side. Here are the declarations:
+
+~~~{lang=C#}{id=code-ITestContract}
+interface ITestContract {
+    DirectedGraph Connect(DirectedGraph graph, Node tail, Node head);
+    DirectedGraph Disconnect(DirectedGraph graph, Node tail, Node head);
+    DirectedGraph Insert(DirectedGraph graph, Node tail, Node head);
+}
+~~~
+
+The operations are pretty much self-explaining, and their implementations are trivial. We should remember that in *marshalling* the objects lose their *referential identity*: for the instance of a directed graph returned from the remote call, the node originally passed as a method parameter is not the same node found in the returned graph.
+
+Let's look at the results of these tree transformations:
+
+Original directed graph sample:
+
+![directed graph sample](directed-graph-original.png)
+
+Starting from the original sample, let's insert a new node after `first`:
+
+![directed graph after insert](directed-graph-insert.png)
+
+...or disconnect `second`:
+
+![directed graph after disconnect](directed-graph-disconnect.png)
+
+... or connect `second` to `first`; it removes the original arc between `second` and `third`:
+
+![directed graph after reconnect](directed-graph-reconnect.png)
 
 ## Compatibility and Build
 
