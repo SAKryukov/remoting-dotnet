@@ -12,7 +12,7 @@ Original publication:
 
 TCP-based remoting to replace deprecated remoting or WCF for .NET Core, .NET 5, and later versions --- in only 3 C# files
 
-*As binary serializer is deprecated, marshalling is based on DataContract. It allows to pass any data structures as method parameters and return values, even the structures with cyclic references. Multiple clients and parallel execution are supported, as well as properties and methods with any input parameters. The service contract is based on a custom interface provide by a developer; absolutely no attributes or base interfaces/classes are required. Required are only two attributes for structural parameter/return types: [DataContract] and [DataMember].*
+*As binary serializer is deprecated, marshalling is based on DataContract. It allows to pass any data structures as method parameters and return values, even object graphs with cyclic references. Multiple clients and parallel execution are supported, as well as properties and methods with any input parameters. The service contract is based on a custom interface provide by a developer; absolutely no attributes or base interfaces/classes are required. Required are only two attributes for structural parameter/return types: [DataContract] and [DataMember].*
 
 <!-- copy to CodeProject from here ------------------------------------------->
 
@@ -61,7 +61,7 @@ On the client side, a client object is created based on the same interface and a
 var client = new Remoting.Client<IMyContract>(serverHostName, port);
 ~~~
 
-Then the client `Proxy` property can be used for the remote calls corresponding to the contract interface method:
+Then the client `Proxy` property can be used for the remote calls corresponding to the service contract interface method:
 
 ~~~{lang=C#}{id=code-sample-client}
 client.Proxy.A(/* ... */);
@@ -72,7 +72,7 @@ var objectGraph = client.Proxy.Transform(/* ... */)
 
 The structured data for the parameters or the returned object should be defined via some `DataContract`. The client and server are totally agnostic to the detail of the data contract, they are discovered automatically using reflection.
 
-The contract interface can use any data types for the parameters, returned objects, and properties. However, please see the [limitations](#heading-limitations).
+The service contract interface can use any data types for the parameters, returned objects, and properties. However, please see the [limitations](#heading-limitations).
 
 Typically, the flow of remote calls should be wrapped in some functions grouping several calls and representing some session:
 
@@ -111,7 +111,7 @@ The [diagram on top](#image-diagram) roughly illustrates the principles of the i
 
 For the server side, we need to dynamically [emit the code](#heading-server3a-emitting-the-method-code) for some object which can identify an implementation class method by the data received from network and call this method with appropriate actual parameters obtained from this data. Reflection is more expensive than other parts of this communication, so using `System.Reflection.Emit` is important to make sure the information about detail of all the methods is reused during remote method calls.
 
-Before emitting code, we need to collect all required information. One problem is that we need to reflect only the methods of the contract interface. On the other hands, the code should be emitted based on `System.Reflection.MethodInfo` of the implementing class, not the interface. Do to so, we need to reflect all the methods of the contract interface and, for each method, reflect a corresponding method of the implementing class. The notion of the "corresponding method" here is somewhat tricky. The following technique is used:
+Before emitting code, we need to collect all required information. One problem is that we need to reflect only the methods of the service contract interface. On the other hands, the code should be emitted based on `System.Reflection.MethodInfo` of the implementing class, not the interface. Do to so, we need to reflect all the methods of the service contract interface and, for each method, reflect a corresponding method of the implementing class. The notion of the "corresponding method" here is somewhat tricky. The following technique is used:
 
 ~~~{lang=C#}{id=code-reflection}
 foreach (var method in methods) {
@@ -145,7 +145,7 @@ foreach (var method in methods) {
 }
 ~~~
 
-In this fragment, the collection `methods` is obtained from the contract interface type recursively, to include all the methods of its base interface types. Note that it transparently includes interface properties, because each property is accessed by its getter, or setter, or both.
+In this fragment, the collection `methods` is obtained from the service contract interface type recursively, to include all the methods of its base interface types. Note that it transparently includes interface properties, because each property is accessed by its getter, or setter, or both.
 
 One problem in the identification of the implementation method is that different methods can have identical names. This problem is solved by supplying fully-qualified name of the interface method with the method profiles, also identified by the methods' parameter information.
 
@@ -157,7 +157,7 @@ Based on the collected metadata, we emit some code for each method and store it 
 
 ### Server: Emitting the Method Code
 
-Each method created with `System.Reflection.Emit` should do only one thing: call the corresponding method of the contract interface implementing class. This is important, because we don't know statically which method is called, as we receive the request from a client in the form of some data. We emit the required methods in the form of [System.Reflection.Emit.DynamicMethod](https://docs.microsoft.com/en-us/dotnet/api/system.reflection.emit.dynamicmethod?view=net-5.0).
+Each method created with `System.Reflection.Emit` should do only one thing: call the corresponding method of the service contract interface implementing class. This is important, because we don't know statically which method is called, as we receive the request from a client in the form of some data. We emit the required methods in the form of [System.Reflection.Emit.DynamicMethod](https://docs.microsoft.com/en-us/dotnet/api/system.reflection.emit.dynamicmethod?view=net-5.0).
 
 The emitted code is fairly simple: we put the method arguments identified by their types on the evaluation stack and emit a call or a virtual method call. As all methods, being based on an interface, are always the instance methods, we also put "this" as the first argument:
 
@@ -218,7 +218,7 @@ System.Runtime.Serialization.DataContractSerializer serializer
 
 The reflection performed by the method `Utility.CollectKnownTypes` is trivial. It recursively traverses the interface type `typeof(CONTRACT)` and all its parent interfaces, all the interface methods, and all the parameters of these methods, but not the return types.
 
-### Rejection of Invalid Contract Interfaces
+### Rejection of Invalid Service Contract Interfaces
 
 During the reflection using the method `Utility.CollectKnownTypes`, the service contract interface is validated. Some validations are possible only during runtime. It is done on both server and client sides, but only once.
 
@@ -329,7 +329,7 @@ public class ClientProxy :
 }
 ~~~
 
-Note the additional interfaces implemented by this class: `IClientInfrastructure` and `IConnectable`.
+Note two additional interfaces implemented by this class: `IClientInfrastructure` and `IConnectable`.
 
 The interface `IClientInfrastructure` is used to pass required context objects to the proxy instance. It cannot be done directly, because the instance is created by `System.Reflection.DispatchProxy`. So, we have:
 
@@ -381,7 +381,7 @@ where `solution` is the .sln file name.
 
 * This framework represents a pure dumb client-server system and the [pull technology](https://en.wikipedia.org/wiki/Pull_technology): there are no callbacks and no [server push](https://en.wikipedia.org/wiki/Push_technology).
 * Therefore, it does not support .NET events
-* The parameters of the contract interface methods [cannot](#heading-rejection-of-invalid-contract-interfaces) be `out` or `ref` parameters.
+* The parameters of the contract interface methods [cannot](#code-validate-interface-parameter-types) be `out` or `ref` parameters.
 * The parameter types are treated as pure data types; in particular, they cannot be types, delegate instances, lambda expressions and the like; in other words, all the parameters and return objects should be serializable via the `DataContract`.
 
 ## Conclusion
