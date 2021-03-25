@@ -92,7 +92,6 @@ namespace Remoting {
                             AddType(typeSet, parameter.ParameterType);
                         else
                             throw new InvalidInterfaceException(type, method, parameter);
-                    AddType(typeSet, method.ReturnType);
                 } //loop methods
             } //AddMethods
         } //CollectKnownTypes
