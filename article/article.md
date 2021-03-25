@@ -153,7 +153,7 @@ One problem in the identification of the implementation method is that different
 
 The nastier problem is this: the same implementation class can still implement two different methods implementing the same interface methods. This situation is possible in only one case: when one method is an implicit implementation of an interface method, and another one is an explicit implementation of the same method.
 
-When we program a call to the method in a "usual" way, we can see, that the priority is given to the implicit implementation. When we call the method using "System.Reflection" and "System.Reflection.Emit", the preference is our choice. In the code [shown above](#code-reflection), we mimic the "usual" way.
+When we program a call to the method in a "usual" way, we can see, that the priority is given to the implicit implementation. When we call the method using `System.Reflection` and `System.Reflection.Emit`, the preference is our choice. In the code [shown above](#code-reflection), we mimic the "usual" way.
 
 Based on the collected metadata, we emit some code for each method and store it in some dictionary for fast access during actual communication with the clients. The call to the method `CreateCaller` [shown above](#code-reflection) is about emitting the code. [Let's see how it is done](#code-reflection-emit).
 
@@ -161,7 +161,7 @@ Based on the collected metadata, we emit some code for each method and store it 
 
 Each method created with `System.Reflection.Emit` should do only one thing: call the corresponding method of the service contract interface implementing class. This is important because we don't know statically which method is called, as we receive the request from a client in the form of some data. We emit the required methods in the form of [System.Reflection.Emit.DynamicMethod](https://docs.microsoft.com/en-us/dotnet/api/system.reflection.emit.dynamicmethod?view=net-5.0).
 
-The emitted code is fairly simple: we put the method arguments identified by their types on the evaluation stack and emit a call or a virtual method call. As all methods based on an interface are always the instance methods, we also put "this" as the first argument:
+The emitted code is fairly simple: we put the method arguments identified by their types on the evaluation stack and emit a call or a virtual method call. As all methods based on an interface are always the instance methods, we also put `this` as the first argument:
 
 ~~~{lang=C#}{id=code-reflection-emit}
 static DynamicMethod CreateCaller(System.Type implementor, MethodInfo method)
@@ -376,6 +376,7 @@ Let's build an initial graph on the client side and define some simple graph tra
 
 ~~~{lang=C#}{id=code-ITestContract}
 interface ITestContract {
+    // ...
     DirectedGraph Connect(DirectedGraph graph, Node tail, Node head);
     DirectedGraph Disconnect(DirectedGraph graph, Node tail, Node head);
     DirectedGraph Insert(DirectedGraph graph, Node tail, Node head);
@@ -384,7 +385,7 @@ interface ITestContract {
 
 The operations are pretty much self-explaining, and their implementations are trivial. We should remember that in *marshalling* the objects lose their *referential identity*: for the instance of a directed graph returned from the remote call, the node originally passed as a method parameter is not the same node found in the returned graph.
 
-Let's look at the results of these tree transformations:
+Let's look at the results of these three transformations.
 
 Original directed graph sample:
 
