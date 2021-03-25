@@ -4,5 +4,8 @@
     "editor.minimap.enabled": false,
     "markdown.styles": [
         "style.css"
+    ],
+    "cSpell.words": [
+        "serializable"
     ]
 }
