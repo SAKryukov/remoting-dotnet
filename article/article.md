@@ -423,7 +423,9 @@ where `solution` is the .sln file name.
 * The parameters of the contract interface methods [cannot](#code-validate-interface-parameter-types) be `out` or `ref` parameters.
 * The parameter types are treated as pure data types; in particular, they cannot be `System.Types` objects, delegate instances, lambda expressions, and the like; in other words, all the parameters and return objects should be serializable via the `DataContract`.
 
-## Conclusion
+## Conclusions
+
+This tiny framework does a lot. Really a lot, with absolutely minimal effort required from an application developer using it.
 
 Even though I've started to work at similar architectures years ago, the code presented here is still highly experimental.
 
