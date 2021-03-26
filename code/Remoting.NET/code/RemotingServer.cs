@@ -11,10 +11,10 @@ namespace Remoting {
     using System.Reflection;
     using System.Reflection.Emit;
     using Object = System.Object;
-    using Stream = System.IO.Stream;
     using DataContractSerializer = System.Runtime.Serialization.DataContractSerializer;
     using TcpListener = System.Net.Sockets.TcpListener;
     using TcpClient = System.Net.Sockets.TcpClient;
+    using Stream = System.IO.Stream;
     using StreamReader = System.IO.StreamReader;
     using StreamWriter = System.IO.StreamWriter;
     using ClientList = System.Collections.Generic.List<ClientWrapper>;
@@ -25,7 +25,7 @@ namespace Remoting {
     using ManualResetEvent = System.Threading.ManualResetEvent;
     using Debug = System.Diagnostics.Debug;
 
-    public class Server<CONTRACT, IMPLEMENTATION> where IMPLEMENTATION : CONTRACT, new() where CONTRACT : class {
+    public partial class Server<CONTRACT, IMPLEMENTATION> where IMPLEMENTATION : CONTRACT, new() where CONTRACT : class {
 
         public Server(int port, IMPLEMENTATION implementor) {
             Debug.Assert(implementor != null);
@@ -123,6 +123,12 @@ namespace Remoting {
 
         #endregion events
 
+    } //class Server
+
+    #region implementation
+
+    public partial class Server<CONTRACT, IMPLEMENTATION> {
+
         readonly Thread listeningThread;
         readonly Thread protocolThread;
 
@@ -142,7 +148,7 @@ namespace Remoting {
         void ProtocolThreadBody() {
             while (!doStop) {
                 int index = 0;
-                lock(lockObject)
+                lock (lockObject)
                     index = ChooseNextClient();
                 protocolStopper.WaitOne();
                 try {
@@ -228,6 +234,7 @@ namespace Remoting {
             doStop = true;
             ExecutionPhaseChanged?.Invoke(this, new ExecutionPhaseEventArgs(ExecutionPhase.StopRequested));
         } //RequestStop
+
     } //class Server
 
     class ClientWrapper : System.IDisposable {
@@ -250,5 +257,7 @@ namespace Remoting {
         internal readonly StreamReader reader;
         internal readonly StreamWriter writer;
     } //class ClientWrapper
+
+    #endregion implementation
 
 }
