@@ -16,12 +16,11 @@ namespace Remoting {
     using StreamWriter = System.IO.StreamWriter;
     using IDisposable = System.IDisposable;
 
-    public class Client<CONTRACT> where CONTRACT : class {
-
+    public interface ICooperative : IDisposable { void Yield(); }
+    public partial class Client<CONTRACT> where CONTRACT : class {
         public class MethodNotFoundException : System.ApplicationException {
             public MethodNotFoundException(string method) : base(method) { }
         } //class MethodNotFoundException
-
         public Client(string hostname, int port) {
             client = new();
             serializer = new(typeof(MethodSchema), Utility.CollectKnownTypes(typeof(CONTRACT)));
@@ -29,27 +28,30 @@ namespace Remoting {
             ((IClientInfrastructure)proxy).SetupContext(client, serializer, hostname, port);
             session = new((IConnectable)proxy);
         } //Client
+        public ICooperative Session { get { return session; } }
+        public CONTRACT Proxy { get { return proxy; } }
+        public interface IConnectable { void Disconnect(); }
+    } //class Client
 
-        public sealed class SessionImplementation : ICooperative {
+    #region implementation
+
+    public partial class Client<CONTRACT> {
+
+        sealed class SessionImplementation : ICooperative {
             internal SessionImplementation(IConnectable proxy) { this.proxy = proxy; }
             void ICooperative.Yield() { proxy.Disconnect(); }
             void IDisposable.Dispose() { proxy.Disconnect(); }
             readonly IConnectable proxy;
         } //class CooperationProvider
         readonly SessionImplementation session;
-        public ICooperative Session { get { return session; } }
-
-        public CONTRACT Proxy { get { return proxy; } }
 
         interface IClientInfrastructure {
             void SetupContext(TcpClient client, DataContractSerializer serializer, string hostname, int port);
         } //interface IClientInfrastructure
 
-        public interface IConnectable { void Disconnect(); }
-
         public class ClientProxy : DispatchProxy, IClientInfrastructure, IConnectable {
             void IConnectable.Disconnect() {
-                if (reader !=null) reader.Dispose();
+                if (reader != null) reader.Dispose();
                 if (writer != null) writer.Dispose();
                 if (stream != null) stream.Dispose();
                 client.Close();
@@ -67,7 +69,7 @@ namespace Remoting {
                     client.Connect(hostname, port);
                     stream = client.GetStream();
                     reader = new(stream);
-                    writer = new(stream);   
+                    writer = new(stream);
                     writer.AutoFlush = true;
                 } //if
                 var methodSchema = new MethodSchema(targetMethod.ToString(), args);
@@ -96,6 +98,5 @@ namespace Remoting {
 
     } //class Client
 
-    public interface ICooperative : IDisposable { void Yield(); }
-
+    #endregion implementation
 }
