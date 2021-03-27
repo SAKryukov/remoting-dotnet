@@ -33,7 +33,13 @@ TCP-based remoting to replace deprecated remoting or WCF for .NET Core, .NET 5, 
 
 In .NET Core and .NET 5, old good remoting and WCF have been deprecated.
 
-How to develop software without remoting? Well, there are 3rd-party remoting or RPC frameworks, but 3rd-party is 3rd-party. But how about taking just 3 my C# files and having it all in no time, with pretty universal and flexible features?
+How to develop software without remoting?
+
+In the document [.NET Framework technologies unavailable on .NET Core and .NET 5+](https://docs.microsoft.com/en-us/dotnet/core/porting/net-framework-tech-unavailable), Microsoft advised us to use named pipes, or sockets, or memory-mapped files, or some irrelevant Web tools, or, finally, some community open-source libraries. Well, thank you, Microsoft! All those lower-level libraries are no match to old good remoting or WCF. As to the open-source...
+
+All right, let's take the challenge. Yes, there are big 3rd-party libraries, they all need some study, testing, evaluation, and so on.
+
+But how about taking just 3 my C# files and having it all in no time, with pretty universal and flexible features? Let's see...
 
 ## Usage
 
