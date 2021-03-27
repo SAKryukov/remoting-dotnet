@@ -423,6 +423,16 @@ where `solution` is the .sln file name.
 * The parameters of the contract interface methods [cannot](#code-validate-interface-parameter-types) be `out` or `ref` parameters.
 * The parameter types are treated as pure data types; in particular, they cannot be `System.Types` objects, delegate instances, lambda expressions, and the like; in other words, all the parameters and return objects should be serializable via the `DataContract`.
 
+Also, a remote method cannot return an interface reference usable on the client side, but this feature still can be implemented in future.
+
+## What's Next?
+
+Old good classical [.NET remoting](https://docs.microsoft.com/en-us/previous-versions/dotnet/netframework-1.1/kwdt6w2k(v=vs.71)) had one very convenient design feature. I don't think many paid attention to it.
+
+A remote method could use an interface type as a return type. When an interface reference is returned to the client side, this reference was a reference to some proxy the client could use the same way as the main service contract. This way, we could design and implement a hierarchical service contract: some interface methods could return reference pointers to secondary interfaces, and we could have several levels of such a hierarchy.
+
+What would it take to implement a similar feature? This is quite doable, will take just thorough analysis and design. Instead of one proxy object, the client side would have a set of proxy objects. Likewise, the service side will need to implement all methods of all interfaces involved, including all return types. And so on...
+
 ## Conclusions
 
 This tiny framework does a lot. Really a lot, with absolutely minimal effort required from an application developer using it.
