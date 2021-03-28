@@ -11,6 +11,7 @@ namespace Remoting {
     using System.Reflection;
     using System.Reflection.Emit;
     using Object = System.Object;
+    using ObjectIDGenerator = System.Runtime.Serialization.ObjectIDGenerator;
     using DataContractSerializer = System.Runtime.Serialization.DataContractSerializer;
     using TcpListener = System.Net.Sockets.TcpListener;
     using TcpClient = System.Net.Sockets.TcpClient;
@@ -28,6 +29,11 @@ namespace Remoting {
     public partial class Server<CONTRACT, IMPLEMENTATION> where IMPLEMENTATION : CONTRACT, new() where CONTRACT : class {
 
         public Server(int port, IMPLEMENTATION implementor) {
+
+            ObjectIDGenerator og = new();
+            bool firstTime;
+            var id = og.GetId(this, out firstTime);
+            id = og.GetId(this, out firstTime);
             Debug.Assert(implementor != null);
             ExecutionPhaseChanged?.Invoke(this, new ExecutionPhaseEventArgs(ExecutionPhase.ReflectionStarted));
             serializer = new(typeof(MethodSchema), Utility.CollectKnownTypes(typeof(CONTRACT)));
@@ -88,8 +94,8 @@ namespace Remoting {
 
     public partial class Server<CONTRACT, IMPLEMENTATION> {
 
-        void CreateImplementingDynamicMethods(IMPLEMENTATION implementor) {
-            AddCallers(methodDictionary, implementor.GetType(), typeof(CONTRACT));
+        static void CreateImplementingDynamicMethods(System.Type interfaceType, object implementor, MethodDictionary methodDictionary) {
+            AddCallers(methodDictionary, implementor.GetType(), interfaceType);
             static DynamicMethod CreateCaller(System.Type implementor, MethodInfo method) {
                 var parameterInfo = method.GetParameters();
                 System.Type[] parameters = new System.Type[parameterInfo.Length + 1];
@@ -131,7 +137,11 @@ namespace Remoting {
                     dictionary.Add(method.ToString(), CreateCaller(implementorType, implementorMethod));
                 } //loop
             } //AddCallers
-        } //
+        } //CreateImplementingDynamicMethods
+
+        void CreateImplementingDynamicMethods(IMPLEMENTATION implementor) {
+            CreateImplementingDynamicMethods(typeof(CONTRACT), implementor, methodDictionary);
+        } //CreateImplementingDynamicMethods
 
         void ListenerThreadBody() {
             while (!doStop) {
