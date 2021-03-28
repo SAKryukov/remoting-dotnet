@@ -34,9 +34,9 @@ namespace Remoting {
             methodDictionary = new();
             CreateImplementingDynamicMethods(implementor);
             ExecutionPhaseChanged?.Invoke(this, new ExecutionPhaseEventArgs(ExecutionPhase.ReflectionComplete));
-            localIpAddress = Dns.GetHostEntry("localhost").AddressList[0];
             this.implementor = implementor;
             this.port = port;
+            localIpAddress = Dns.GetHostEntry(DefinitionSet.localHost).AddressList[0];
             listener = new(localIpAddress, port);
             listeningThread = new(ListenerThreadBody);
             protocolThread = new(ProtocolThreadBody);

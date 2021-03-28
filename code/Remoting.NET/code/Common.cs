@@ -34,6 +34,7 @@ namespace Remoting {
                 public const int Last = 0xFFFF; //65535;
             } //class DynamicPrivatePorts   
         } //PortAssignmentsIANA
+        internal const string localHost = "localhost";
         internal static readonly string NullIndicator = string.Empty;
         internal static readonly string StopIndicator = "s";
         internal const string InterfaceMethodNotFoundIndicator = "?";
