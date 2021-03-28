@@ -32,55 +32,14 @@ namespace Remoting {
             ExecutionPhaseChanged?.Invoke(this, new ExecutionPhaseEventArgs(ExecutionPhase.ReflectionStarted));
             serializer = new(typeof(MethodSchema), Utility.CollectKnownTypes(typeof(CONTRACT)));
             methodDictionary = new();
-            this.implementor = implementor;
-            AddCallers(methodDictionary, implementor.GetType(), typeof(CONTRACT));
+            CreateImplementingDynamicMethods(implementor);
             ExecutionPhaseChanged?.Invoke(this, new ExecutionPhaseEventArgs(ExecutionPhase.ReflectionComplete));
             localIpAddress = Dns.GetHostEntry("localhost").AddressList[0];
+            this.implementor = implementor;
             this.port = port;
             listener = new(localIpAddress, port);
             listeningThread = new(ListenerThreadBody);
             protocolThread = new(ProtocolThreadBody);
-            static DynamicMethod CreateCaller(System.Type implementor, MethodInfo method) {
-                var parameterInfo = method.GetParameters();
-                System.Type[] parameters = new System.Type[parameterInfo.Length + 1];
-                parameters[0] = implementor;
-                for (var index = 1; index < parameters.Length; ++index)
-                    parameters[index] = parameterInfo[index - 1].ParameterType;
-                DynamicMethod result = new($"{method.DeclaringType.FullName}.{method.Name}", method.ReturnType, parameters);
-                var generator = result.GetILGenerator();
-                for (var index = 0; index < parameters.Length; ++index)
-                    generator.Emit(OpCodes.Ldarg_S, index);
-                generator.Emit(method.IsVirtual ? OpCodes.Callvirt : OpCodes.Call, method);
-                generator.Emit(OpCodes.Ret);
-                return result;
-            } //CreateCaller
-            static void AddCallers(MethodDictionary dictionary, System.Type implementorType, System.Type interfaceType) {
-                var interfaces = interfaceType.GetInterfaces();
-                foreach (var parentInterfaceType in interfaces)
-                    AddCallers(dictionary, implementorType, parentInterfaceType);
-                System.Type type = interfaceType;
-                var methods = type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-                foreach (var method in methods) {
-                    var parameterInfo = method.GetParameters();
-                    var methodName = $"{interfaceType.FullName}.{method.Name}";
-                    var parameters = System.Array.ConvertAll(method.GetParameters(), new System.Converter<ParameterInfo, System.Type>(el => el.ParameterType));
-                    var implementorMethod = implementorType.GetMethod( // see if there is an implicit interface method implementation, the priority in normal .NET dispatching:
-                            method.Name,
-                            BindingFlags.Public | BindingFlags.Instance,
-                            null,
-                            parameters,
-                            null);
-                    if (implementorMethod == null) // see if there is an explicit method implementation
-                        implementorMethod = implementorType.GetMethod(
-                            methodName,
-                            BindingFlags.NonPublic | BindingFlags.Instance,
-                            null,
-                            parameters,
-                            null);
-                    Debug.Assert(implementorMethod != null);
-                    dictionary.Add(method.ToString(), CreateCaller(implementorType, implementorMethod));
-                } //loop
-            } //AddCallers
         } //Server
 
         public void Start() {
@@ -129,8 +88,50 @@ namespace Remoting {
 
     public partial class Server<CONTRACT, IMPLEMENTATION> {
 
-        readonly Thread listeningThread;
-        readonly Thread protocolThread;
+        void CreateImplementingDynamicMethods(IMPLEMENTATION implementor) {
+            AddCallers(methodDictionary, implementor.GetType(), typeof(CONTRACT));
+            static DynamicMethod CreateCaller(System.Type implementor, MethodInfo method) {
+                var parameterInfo = method.GetParameters();
+                System.Type[] parameters = new System.Type[parameterInfo.Length + 1];
+                parameters[0] = implementor;
+                for (var index = 1; index < parameters.Length; ++index)
+                    parameters[index] = parameterInfo[index - 1].ParameterType;
+                DynamicMethod result = new($"{method.DeclaringType.FullName}.{method.Name}", method.ReturnType, parameters);
+                var generator = result.GetILGenerator();
+                for (var index = 0; index < parameters.Length; ++index)
+                    generator.Emit(OpCodes.Ldarg_S, index);
+                generator.Emit(method.IsVirtual ? OpCodes.Callvirt : OpCodes.Call, method);
+                generator.Emit(OpCodes.Ret);
+                return result;
+            } //CreateCaller
+            static void AddCallers(MethodDictionary dictionary, System.Type implementorType, System.Type interfaceType) {
+                var interfaces = interfaceType.GetInterfaces();
+                foreach (var parentInterfaceType in interfaces)
+                    AddCallers(dictionary, implementorType, parentInterfaceType);
+                System.Type type = interfaceType;
+                var methods = type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                foreach (var method in methods) {
+                    var parameterInfo = method.GetParameters();
+                    var methodName = $"{interfaceType.FullName}.{method.Name}";
+                    var parameters = System.Array.ConvertAll(method.GetParameters(), new System.Converter<ParameterInfo, System.Type>(el => el.ParameterType));
+                    var implementorMethod = implementorType.GetMethod( // see if there is an implicit interface method implementation, the priority in normal .NET dispatching:
+                            method.Name,
+                            BindingFlags.Public | BindingFlags.Instance,
+                            null,
+                            parameters,
+                            null);
+                    if (implementorMethod == null) // see if there is an explicit method implementation
+                        implementorMethod = implementorType.GetMethod(
+                            methodName,
+                            BindingFlags.NonPublic | BindingFlags.Instance,
+                            null,
+                            parameters,
+                            null);
+                    Debug.Assert(implementorMethod != null);
+                    dictionary.Add(method.ToString(), CreateCaller(implementorType, implementorMethod));
+                } //loop
+            } //AddCallers
+        } //
 
         void ListenerThreadBody() {
             while (!doStop) {
@@ -221,6 +222,14 @@ namespace Remoting {
             return Utility.ObjectToString(responseSerializer, response);
         } //GenerateResponse
 
+        bool doStop = false;
+        void RequestStop() {
+            doStop = true;
+            ExecutionPhaseChanged?.Invoke(this, new ExecutionPhaseEventArgs(ExecutionPhase.StopRequested));
+        } //RequestStop
+
+        readonly Thread listeningThread;
+        readonly Thread protocolThread;
         readonly IMPLEMENTATION implementor;
         readonly DataContractSerializer serializer;
         readonly TcpListener listener;
@@ -229,11 +238,6 @@ namespace Remoting {
         readonly int port;
         readonly MethodDictionary methodDictionary;
         readonly ManualResetEvent protocolStopper = new(false);
-        bool doStop = false;
-        void RequestStop() {
-            doStop = true;
-            ExecutionPhaseChanged?.Invoke(this, new ExecutionPhaseEventArgs(ExecutionPhase.StopRequested));
-        } //RequestStop
 
     } //class Server
 
