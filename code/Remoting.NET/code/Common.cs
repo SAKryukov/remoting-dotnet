@@ -22,7 +22,7 @@ namespace Remoting {
         // https://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.xhtml
         // https://tools.ietf.org/html/rfc6335
         public static class PortAssignmentsIANA {
-            public static class SystemPorts { 
+            public static class SystemPorts {
                 public const int First = 0;
                 public const int Last = 0x400 - 1; //1023;
             } //class SystemPorts
@@ -44,6 +44,8 @@ namespace Remoting {
         internal static string FormatBadInterfaceParameter(System.Type invalidInterface, MethodInfo badMethod, ParameterInfo badParameter) =>
             $"{invalidInterface.FullName}.{badMethod.Name}, parameter {badParameter.ParameterType.FullName} {badParameter.Name} is not an input parameter, cannot be serialized";
     } //class DefinitionSet
+
+    public interface IServerSide: System.IDisposable { }
 
     [DataContract(Namespace = "r")]
     class MethodSchema {    
@@ -78,9 +80,14 @@ namespace Remoting {
                 var methods = type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
                 foreach (var method in methods) {
                     var parameters = method.GetParameters();
-                    foreach (var parameter in parameters)
+                    foreach (var parameter in parameters) {
                         action(type, method, parameter);
+                        if (parameter.ParameterType.IsInterface)
+                            TraverseTypes(parameter.ParameterType, action);
+                    } //loop
                     action(type, method, null);
+                    if (method.ReturnType != typeof(void) && method.ReturnType.IsInterface)
+                        TraverseTypes(method.ReturnType, action);
                 } //loop methods
             } //AddMethods
         } //TraverseTypes
@@ -104,18 +111,17 @@ namespace Remoting {
             foreach (var value in typeSet) result.Add(value);
             return result;
         } //CollectKnownTypes
-        internal static void CollectServerSideInterfaceTypes(System.Type interfaceType, System.Type implemented, TypeList container) {
-            Debug.Assert(implemented != null);
-            Debug.Assert(implemented.IsInterface);
+        internal static void CollectServerSideInterfaceTypes(System.Type interfaceType, TypeList container) {
+            var targetType = typeof(IServerSide);
             TraverseTypes(interfaceType, (interfaceType, method, parameter) => {
                 System.Type parameterType = parameter == null ? method.ReturnType : parameter.ParameterType;
                 if (parameterType == typeof(void)) return;
                 if (!parameterType.IsInterface) return;
-                if (implemented.IsAssignableFrom(parameterType))
+                if (targetType.IsAssignableFrom(parameterType))
                     container.Add(parameterType);
                 var baseInterfaces = parameterType.GetInterfaces();
                 foreach (var baseInterface in baseInterfaces)
-                    CollectServerSideInterfaceTypes(baseInterface, implemented, container);
+                    CollectServerSideInterfaceTypes(baseInterface, container);
             });
         } //CollectServerSideInterfaceTypes
         internal static string ObjectToString(DataContractSerializer serializer, object graph) {
