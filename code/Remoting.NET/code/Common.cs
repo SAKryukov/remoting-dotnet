@@ -111,7 +111,7 @@ namespace Remoting {
             foreach (var value in typeSet) result.Add(value);
             return result;
         } //CollectKnownTypes
-        internal static void CollectServerSideInterfaceTypes(System.Type interfaceType, TypeList container) {
+        internal static void CollectServerSideInterfaceTypes(System.Type interfaceType, TypeSet container) {
             var targetType = typeof(IServerSide);
             TraverseTypes(interfaceType, (interfaceType, method, parameter) => {
                 System.Type parameterType = parameter == null ? method.ReturnType : parameter.ParameterType;
