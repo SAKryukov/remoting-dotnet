@@ -15,6 +15,7 @@ namespace Remoting {
     using TypeEnumerable = System.Collections.Generic.IEnumerable<System.Type>;
     using TypeList = System.Collections.Generic.List<System.Type>;
     using TypeSet = System.Collections.Generic.HashSet<System.Type>;
+    using Debug = System.Diagnostics.Debug;
 
     public static class DefinitionSet {
         // IANA port numbers, IETF RFC6335:
@@ -66,17 +67,25 @@ namespace Remoting {
             internal InvalidInterfaceException(System.Type invalidInterface, MethodInfo badMethod, ParameterInfo badParameter) :
                 base (DefinitionSet.FormatBadInterfaceParameter(invalidInterface, badMethod, badParameter)) { }
         }; //class InvalidInterfaceException
-        internal static TypeEnumerable CollectKnownTypes(System.Type interfaceType) {
+        static void TraverseTypes(System.Type interfaceType, System.Action<System.Type, MethodInfo, ParameterInfo> action) {
             if (!interfaceType.IsInterface)
                 throw new InvalidInterfaceException(interfaceType);
-            TypeSet typeSet = new();
             var interfaces = interfaceType.GetInterfaces();
             foreach (var parentInterfaceType in interfaces)
-                AddMethods(parentInterfaceType, typeSet);
-            AddMethods(interfaceType, typeSet); 
-            TypeList result = new();
-            foreach (var value in typeSet) result.Add(value);
-            return result;
+                TraverseTypes(parentInterfaceType, action);
+            TraverseMethods(interfaceType, action);
+            static void TraverseMethods(System.Type type, System.Action<System.Type, MethodInfo, ParameterInfo> action) {
+                var methods = type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                foreach (var method in methods) {
+                    var parameters = method.GetParameters();
+                    foreach (var parameter in parameters)
+                        action(type, method, parameter);
+                    action(type, method, null);
+                } //loop methods
+            } //AddMethods
+        } //TraverseTypes
+        internal static TypeEnumerable CollectKnownTypes(System.Type interfaceType) {
+            TypeSet typeSet = new();
             static void AddType(TypeSet typeSet, System.Type type) {
                 if (type == typeof(void)) return;
                 if (type.IsPrimitive) return;
@@ -84,18 +93,31 @@ namespace Remoting {
                 if (!typeSet.Contains(type))
                     typeSet.Add(type);
             } //AddType
-            static void AddMethods(System.Type type, TypeSet typeSet) {
-                var methods = type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-                foreach (var method in methods) {
-                    var parameters = method.GetParameters();
-                    foreach (var parameter in parameters)
-                        if (!parameter.IsOut && !parameter.ParameterType.IsByRef)
-                            AddType(typeSet, parameter.ParameterType);
-                        else
-                            throw new InvalidInterfaceException(type, method, parameter);
-                } //loop methods
-            } //AddMethods
+            TraverseTypes(interfaceType, (interfaceType, method, parameter) => {
+                if (parameter == null) return;  
+                if (!parameter.IsOut && !parameter.ParameterType.IsByRef)
+                    AddType(typeSet, parameter.ParameterType);
+                else
+                    throw new InvalidInterfaceException(interfaceType, method, parameter);
+            });
+            TypeList result = new();
+            foreach (var value in typeSet) result.Add(value);
+            return result;
         } //CollectKnownTypes
+        internal static void CollectServerSideParameters(System.Type interfaceType, System.Type implemented, TypeList container) {
+            Debug.Assert(implemented != null);
+            Debug.Assert(implemented.IsInterface);
+            TraverseTypes(interfaceType, (interfaceType, method, parameter) => {
+                System.Type parameterType = parameter == null ? method.ReturnType : parameter.ParameterType;
+                if (parameterType == typeof(void)) return;
+                if (!parameterType.IsInterface) return;
+                if (implemented.IsAssignableFrom(parameterType))
+                    container.Add(parameterType);
+                var baseInterfaces = parameterType.GetInterfaces();
+                foreach (var baseInterface in baseInterfaces)
+                    CollectServerSideParameters(baseInterface, implemented, container);
+            });
+        } //CollectServerSideParameters
         internal static string ObjectToString(DataContractSerializer serializer, object graph) {
             using MemoryStream memoryStream = new();
             serializer.WriteObject(memoryStream, graph);

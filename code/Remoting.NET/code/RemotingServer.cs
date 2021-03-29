@@ -29,11 +29,6 @@ namespace Remoting {
     public partial class Server<CONTRACT, IMPLEMENTATION> where IMPLEMENTATION : CONTRACT, new() where CONTRACT : class {
 
         public Server(int port, IMPLEMENTATION implementor) {
-
-            ObjectIDGenerator og = new();
-            bool firstTime;
-            var id = og.GetId(this, out firstTime);
-            id = og.GetId(this, out firstTime);
             Debug.Assert(implementor != null);
             ExecutionPhaseChanged?.Invoke(this, new ExecutionPhaseEventArgs(ExecutionPhase.ReflectionStarted));
             serializer = new(typeof(MethodSchema), Utility.CollectKnownTypes(typeof(CONTRACT)));
