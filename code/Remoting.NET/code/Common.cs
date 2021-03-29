@@ -71,8 +71,8 @@ namespace Remoting {
             if (!interfaceType.IsInterface)
                 throw new InvalidInterfaceException(interfaceType);
             var interfaces = interfaceType.GetInterfaces();
-            foreach (var parentInterfaceType in interfaces)
-                TraverseTypes(parentInterfaceType, action);
+            foreach (var baseInterfaceType in interfaces)
+                TraverseTypes(baseInterfaceType, action);
             TraverseMethods(interfaceType, action);
             static void TraverseMethods(System.Type type, System.Action<System.Type, MethodInfo, ParameterInfo> action) {
                 var methods = type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
@@ -104,7 +104,7 @@ namespace Remoting {
             foreach (var value in typeSet) result.Add(value);
             return result;
         } //CollectKnownTypes
-        internal static void CollectServerSideParameters(System.Type interfaceType, System.Type implemented, TypeList container) {
+        internal static void CollectServerSideInterfaceTypes(System.Type interfaceType, System.Type implemented, TypeList container) {
             Debug.Assert(implemented != null);
             Debug.Assert(implemented.IsInterface);
             TraverseTypes(interfaceType, (interfaceType, method, parameter) => {
@@ -115,9 +115,9 @@ namespace Remoting {
                     container.Add(parameterType);
                 var baseInterfaces = parameterType.GetInterfaces();
                 foreach (var baseInterface in baseInterfaces)
-                    CollectServerSideParameters(baseInterface, implemented, container);
+                    CollectServerSideInterfaceTypes(baseInterface, implemented, container);
             });
-        } //CollectServerSideParameters
+        } //CollectServerSideInterfaceTypes
         internal static string ObjectToString(DataContractSerializer serializer, object graph) {
             using MemoryStream memoryStream = new();
             serializer.WriteObject(memoryStream, graph);
