@@ -61,6 +61,9 @@ namespace Test {
 
             Console.WriteLine("Ready to connect and call first method remotely... To quit, press any key...");
             try {
+                remotingClient.Proxy.B(1, 2);
+                remotingClient.Proxy.B(1, 2);
+                remotingClient.Proxy.B(1, 2);
                 SimpleDemonstration();
                 GraphDemonstration();
             } catch (System.Exception e) {

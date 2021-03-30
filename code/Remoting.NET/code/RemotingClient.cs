@@ -22,10 +22,12 @@ namespace Remoting {
             public MethodNotFoundException(string method) : base(method) { }
         } //class MethodNotFoundException
         public Client(string hostname, int port) {
+            this.hostname = hostname;
+            this.port = port;
             client = new();
             serializer = new(typeof(MethodSchema), Utility.CollectKnownTypes(typeof(CONTRACT)));
             proxy = DispatchProxy.Create<CONTRACT, ClientProxy>();
-            ((IClientInfrastructure)proxy).SetupContext(client, serializer, hostname, port);
+            ((IClientInfrastructure)proxy).Context = this;
             session = new((IConnectable)proxy);
         } //Client
         public ICooperative Session { get { return session; } }
@@ -46,34 +48,29 @@ namespace Remoting {
         readonly SessionImplementation session;
 
         interface IClientInfrastructure {
-            void SetupContext(TcpClient client, DataContractSerializer serializer, string hostname, int port);
+            Client<CONTRACT> Context { set; }
         } //interface IClientInfrastructure
 
         public class ClientProxy : DispatchProxy, IClientInfrastructure, IConnectable {
+            Client<CONTRACT> IClientInfrastructure.Context { set { this.context = value; } }
             void IConnectable.Disconnect() {
                 if (reader != null) reader.Dispose();
                 if (writer != null) writer.Dispose();
                 if (stream != null) stream.Dispose();
-                client.Close();
-                client.Dispose();
-                client = new TcpClient();
+                context.client.Close();
+                context.client.Dispose();
+                context.client = new TcpClient();
             } //Disconnect
-            void IClientInfrastructure.SetupContext(TcpClient client, DataContractSerializer serializer, string hostname, int port) {
-                this.client = client;
-                this.callSerializer = serializer;
-                this.hostname = hostname;
-                this.port = port;
-            } //IClientInfrastructure.SetupContext
             protected override object Invoke(MethodInfo targetMethod, object[] args) {
-                if (!client.Connected) {
-                    client.Connect(hostname, port);
-                    stream = client.GetStream();
+                if (!context.client.Connected) {
+                    context.client.Connect(context.hostname, context.port);
+                    stream = context.client.GetStream();
                     reader = new(stream);
                     writer = new(stream);
                     writer.AutoFlush = true;
                 } //if
                 var methodSchema = new MethodSchema(targetMethod.ToString(), args);
-                string requestLine = Utility.ObjectToString(callSerializer, methodSchema);
+                string requestLine = Utility.ObjectToString(context.serializer, methodSchema);
                 writer.WriteLine(requestLine);
                 string responseLine = reader.ReadLine();
                 if (responseLine == DefinitionSet.NullIndicator)
@@ -83,18 +80,17 @@ namespace Remoting {
                 DataContractSerializer returnSerializer = new(targetMethod.ReturnType);
                 return Utility.StringToObject(returnSerializer, responseLine);
             } //Invoke
-            TcpClient client;
-            string hostname;
-            int port;
-            DataContractSerializer callSerializer;
+            Client<CONTRACT> context;
             Stream stream;
             StreamReader reader;
             StreamWriter writer;
         } //class ClientProxy
 
         readonly DataContractSerializer serializer;
-        readonly TcpClient client;
+        TcpClient client;
         readonly CONTRACT proxy;
+        readonly string hostname;
+        readonly int port;
 
     } //class Client
 
