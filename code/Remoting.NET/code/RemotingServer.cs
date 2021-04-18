@@ -12,6 +12,7 @@ namespace Remoting {
     using System.Reflection.Emit;
     using Object = System.Object;
     using ObjectIDGenerator = System.Runtime.Serialization.ObjectIDGenerator;
+    using ObjectIdDictionary = System.Collections.Generic.Dictionary<System.Int64, object>;
     using DataContractSerializer = System.Runtime.Serialization.DataContractSerializer;
     using TcpListener = System.Net.Sockets.TcpListener;
     using TcpClient = System.Net.Sockets.TcpClient;
@@ -224,6 +225,13 @@ namespace Remoting {
             if (response == null)
                 return DefinitionSet.NullIndicator;
             DataContractSerializer responseSerializer = new(response.GetType());
+            if (response.GetType().IsAssignableTo(typeof(IServerSide))) {
+                var id = idGenerator.GetId(response, out bool firstTime);
+                if (firstTime)
+                    objectIdDictionary.Add(id, response);
+                return id.ToString();
+                //SA???
+            } //if
             return Utility.ObjectToString(responseSerializer, response);
         } //GenerateResponse
 
@@ -233,6 +241,8 @@ namespace Remoting {
             ExecutionPhaseChanged?.Invoke(this, new ExecutionPhaseEventArgs(ExecutionPhase.StopRequested));
         } //RequestStop
 
+        readonly ObjectIDGenerator idGenerator = new();
+        readonly ObjectIdDictionary objectIdDictionary = new();
         readonly Thread listeningThread;
         readonly Thread protocolThread;
         readonly IMPLEMENTATION implementor;

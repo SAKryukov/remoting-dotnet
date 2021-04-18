@@ -32,7 +32,7 @@ namespace Test {
             return node;
         }
         [DataMember]
-        NodeSet nodeSet = new();
+        readonly NodeSet nodeSet = new();    
         NodeSet NodeSet { get { return nodeSet; } }
         [DataMember]
         internal Node AccessNode;
@@ -75,7 +75,12 @@ namespace Test {
         internal static Node second, third, fourth;
     } //DirectedGraph
 
+    interface IServerA : Remoting.IServerSide {
+        int A(int b, int c);
+    }
+
     interface ITestContract {
+        IServerA A();
         string A(int a, int b);
         string P { get; set; }
         string A(string a, int b);

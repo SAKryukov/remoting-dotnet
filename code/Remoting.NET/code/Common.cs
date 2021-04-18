@@ -113,7 +113,7 @@ namespace Remoting {
         } //CollectKnownTypes
         internal static void CollectServerSideInterfaceTypes(System.Type interfaceType, TypeSet container) {
             var targetType = typeof(IServerSide);
-            TraverseTypes(interfaceType, (interfaceType, method, parameter) => {
+            TraverseTypes(interfaceType, (interfaceType, method, parameter) => { //SA??? it would be enough to collect return types; if a IServerSide is found but never returned, it cannot be used anywayy
                 System.Type parameterType = parameter == null ? method.ReturnType : parameter.ParameterType;
                 if (parameterType == typeof(void)) return;
                 if (!parameterType.IsInterface) return;

@@ -10,7 +10,13 @@
 namespace Test {
     using Console = System.Console;
 
+    class ImplementServerA : IServerA {
+        int IServerA.A(int b, int c) { return b * c; }
+        void System.IDisposable.Dispose() { }
+    }
+
     class Implementation : ITestContract {
+        IServerA ITestContract.A() { return new ImplementServerA(); }
         string ITestContract.A(int a, int b) {
             return $"First A: a: {a}, b:{b}, a+b: {a+b} ";
         }
@@ -51,7 +57,7 @@ namespace Test {
             return $"{number} {subject}";
         }
 
-        static void Main() {
+        static void Main() {    
             var server = new Remoting.Server<ITestContract, Implementation>(Remoting.DefinitionSet.PortAssignmentsIANA.DynamicPrivatePorts.First, new Implementation());
             server.Connected += (sender, eventArgs) => {
                 Console.WriteLine($"Client connected, serving {ClientNumber(eventArgs.ClientCount)}");
