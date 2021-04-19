@@ -10,6 +10,7 @@
 namespace Remoting {
     using System.Runtime.Serialization;
     using System.Reflection;
+    using UniqueId = System.Int64;
     using Encoding = System.Text.Encoding;
     using MemoryStream = System.IO.MemoryStream;
     using TypeEnumerable = System.Collections.Generic.IEnumerable<System.Type>;
@@ -45,7 +46,11 @@ namespace Remoting {
             $"{invalidInterface.FullName}.{badMethod.Name}, parameter {badParameter.ParameterType.FullName} {badParameter.Name} is not an input parameter, cannot be serialized";
     } //class DefinitionSet
 
-    public interface IServerSide: System.IDisposable { }
+    public interface IServerSide: System.IDisposable {
+        #pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
+        void System.IDisposable.Dispose() { }
+        #pragma warning restore CA1816 // Dispose methods should call SuppressFinalize
+    } //System.IDisposable.Dispose
 
     [DataContract(Namespace = "r")]
     class MethodSchema {    
@@ -61,7 +66,15 @@ namespace Remoting {
         [DataMember(Name = "a")]
         internal object[] actualParameters;
     } //class MethodSchema
-    
+
+    [DataContract(Namespace = "r")]
+    class ServerSideParameterSchema {
+        internal ServerSideParameterSchema(UniqueId implementorId) { this.implementorId = implementorId; }
+        internal UniqueId ImplementorId { get { return implementorId; } }
+        [DataMember(Name = "i")]
+        readonly UniqueId implementorId;
+    } //ServerSideParameterSchema
+
     static class Utility {
         class InvalidInterfaceException : System.ApplicationException {
             internal InvalidInterfaceException(System.Type invalidInterface) :
@@ -93,6 +106,7 @@ namespace Remoting {
         } //TraverseTypes
         internal static TypeEnumerable CollectKnownTypes(System.Type interfaceType) {
             TypeSet typeSet = new();
+            typeSet.Add(typeof(ServerSideParameterSchema));
             static void AddType(TypeSet typeSet, System.Type type) {
                 if (type == typeof(void)) return;
                 if (type.IsPrimitive) return;

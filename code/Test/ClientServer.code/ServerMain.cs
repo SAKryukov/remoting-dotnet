@@ -12,7 +12,6 @@ namespace Test {
 
     class ImplementServerA : IServerA {
         int IServerA.A(int b, int c) { return b * c; }
-        void System.IDisposable.Dispose() { }
     }
 
     class Implementation : ITestContract {
