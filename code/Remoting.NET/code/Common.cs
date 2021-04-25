@@ -120,12 +120,13 @@ namespace Remoting {
                     throw new InvalidInterfaceException(interfaceType, method, parameter);
             });
             TypeList result = new();
+            CollectDynamicInterfaceTypes(interfaceType, typeSet);
             foreach (var value in typeSet) result.Add(value);
             return result;
         } //CollectKnownTypes
         internal static void CollectDynamicInterfaceTypes(System.Type interfaceType, TypeSet container) {
             var targetType = typeof(IDynamic);
-            TraverseTypes(interfaceType, (interfaceType, method, parameter) => { //SA??? it would be enough to collect return types; if a IDynamic is found but never returned, it cannot be used anywayy
+            TraverseTypes(interfaceType, (interfaceType, method, parameter) => {
                 System.Type parameterType = parameter == null ? method.ReturnType : parameter.ParameterType;
                 if (parameterType == typeof(void)) return;
                 if (!parameterType.IsInterface) return;

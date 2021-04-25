@@ -11,7 +11,7 @@ namespace Test {
     using Console = System.Console;
 
     class ImplementServerA : IDynamicA {
-        int IDynamicA.A(int b, int c) { return b * c; }
+        int IDynamicA.A(int b, DynamicParameter c) { return b * c.c; }
     }
 
     class Implementation : ITestContract {

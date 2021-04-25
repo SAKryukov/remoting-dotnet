@@ -33,7 +33,8 @@ namespace Remoting {
         public Server(int port, IMPLEMENTATION implementor) {
             Debug.Assert(implementor != null);
             ExecutionPhaseChanged?.Invoke(this, new ExecutionPhaseEventArgs(ExecutionPhase.ReflectionStarted));
-            serializer = new(typeof(MethodSchema), Utility.CollectKnownTypes(typeof(CONTRACT)));
+            var knownTypes = Utility.CollectKnownTypes(typeof(CONTRACT));
+            serializer = new(typeof(MethodSchema), knownTypes);
             methodDictionary = new();
             CreateImplementingDynamicMethods(implementor);
             ExecutionPhaseChanged?.Invoke(this, new ExecutionPhaseEventArgs(ExecutionPhase.ReflectionComplete));

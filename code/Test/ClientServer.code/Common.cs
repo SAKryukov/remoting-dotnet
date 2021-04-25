@@ -75,8 +75,14 @@ namespace Test {
         internal static Node second, third, fourth;
     } //DirectedGraph
 
+    [DataContract(Namespace = "https://www.SAKryukov.org/schema/Remoting.NET", IsReference = true)]
+    class DynamicParameter {
+        [DataMember]
+        public int c;
+    }
+
     interface IDynamicA : Remoting.IDynamic {
-        int A(int b, int c);
+        int A(int b, DynamicParameter c);
     } //interface IDynamicA
 
     interface ITestContract {
