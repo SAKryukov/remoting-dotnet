@@ -15,6 +15,9 @@ namespace Remoting {
     using StreamReader = System.IO.StreamReader;
     using StreamWriter = System.IO.StreamWriter;
     using IDisposable = System.IDisposable;
+    using UniqueId = System.Int64;
+    using ProxyDictionary = System.Collections.Generic.Dictionary<System.Int64, object>;
+    using Debug = System.Diagnostics.Debug;
 
     public interface ICooperative : IDisposable { void Yield(); }
     public partial class Client<CONTRACT> where CONTRACT : class {
@@ -22,6 +25,9 @@ namespace Remoting {
             public MethodNotFoundException(string method) : base(method) { }
         } //class MethodNotFoundException
         public Client(string hostname, int port) {
+            var dispathProxyCreatorMethods = typeof(DispatchProxy).GetMethods(BindingFlags.Public | BindingFlags.Static);
+            Debug.Assert(dispathProxyCreatorMethods != null && dispathProxyCreatorMethods.Length == 1);
+            dispathProxyCreator = dispathProxyCreatorMethods[0];
             this.hostname = hostname;
             this.port = port;
             client = new();
@@ -77,6 +83,17 @@ namespace Remoting {
                     return null;
                 else if (responseLine == DefinitionSet.InterfaceMethodNotFoundIndicator)
                     throw new MethodNotFoundException(methodSchema.MethodName);
+                if (responseLine != null && responseLine.Length > 0 && char.IsDigit(responseLine[0])) { //IDynamic
+                    var uniqueId = UniqueId.Parse(responseLine);
+                    if (!context.dynamicProxyDictionary.TryGetValue(uniqueId, out object response)) {
+                        var instantiatedMethod = context.dispathProxyCreator.MakeGenericMethod(new System.Type[] { targetMethod.ReturnType, typeof(ClientProxy)});
+                        var dynamicProxy = instantiatedMethod.Invoke(null, null);
+                        ((IClientInfrastructure)dynamicProxy).Context = this.context;
+                        context.dynamicProxyDictionary.Add(uniqueId, dynamicProxy);
+                        return dynamicProxy;
+                    } else
+                        return response;
+                } //
                 DataContractSerializer returnSerializer = new(targetMethod.ReturnType);
                 return Utility.StringToObject(returnSerializer, responseLine);
             } //Invoke
@@ -91,6 +108,8 @@ namespace Remoting {
         readonly CONTRACT proxy;
         readonly string hostname;
         readonly int port;
+        readonly ProxyDictionary dynamicProxyDictionary = new();
+        readonly MethodInfo dispathProxyCreator;
 
     } //class Client
 

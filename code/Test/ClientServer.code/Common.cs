@@ -77,16 +77,17 @@ namespace Test {
 
     [DataContract(Namespace = "https://www.SAKryukov.org/schema/Remoting.NET", IsReference = true)]
     class DynamicParameter {
+        internal DynamicParameter(int c) { this.c = c; }
         [DataMember]
         public int c;
     }
 
-    interface IDynamicA : Remoting.IDynamic {
+    interface IDynamicTest : Remoting.IDynamic {
         int A(int b, DynamicParameter c);
-    } //interface IDynamicA
+    } //interface IDynamicTest
 
     interface ITestContract {
-        IDynamicA A();
+        IDynamicTest DynamicTestMethod();
         string A(int a, int b);
         string P { get; set; }
         string A(string a, int b);
