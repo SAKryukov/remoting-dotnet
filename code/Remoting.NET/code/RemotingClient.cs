@@ -68,8 +68,9 @@ namespace Remoting {
                 context.client = new TcpClient();
             } //Disconnect
             protected override object Invoke(MethodInfo targetMethod, object[] args) {
-                if (!context.client.Connected) {
-                    context.client.Connect(context.hostname, context.port);
+                if ((!context.client.Connected) || writer == null || reader == null) {
+                    if ((!context.client.Connected))
+                        context.client.Connect(context.hostname, context.port);
                     stream = context.client.GetStream();
                     reader = new(stream);
                     writer = new(stream);
