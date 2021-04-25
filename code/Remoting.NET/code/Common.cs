@@ -46,11 +46,10 @@ namespace Remoting {
             $"{invalidInterface.FullName}.{badMethod.Name}, parameter {badParameter.ParameterType.FullName} {badParameter.Name} is not an input parameter, cannot be serialized";
     } //class DefinitionSet
 
-    public interface IServerSide: System.IDisposable {
-        #pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
-        void System.IDisposable.Dispose() { }
-        #pragma warning restore CA1816 // Dispose methods should call SuppressFinalize
-    } //System.IDisposable.Dispose
+    public interface IDynamic {
+        // not System.IDisposable.Dispose, used to remove from the dictionary of dynamic implementation objects objectIdDictionary:
+        void Dispose() { }
+    } //IDynamic
 
     [DataContract(Namespace = "r")]
     class MethodSchema {    
@@ -126,7 +125,7 @@ namespace Remoting {
             return result;
         } //CollectKnownTypes
         internal static void CollectServerSideInterfaceTypes(System.Type interfaceType, TypeSet container) {
-            var targetType = typeof(IServerSide);
+            var targetType = typeof(IDynamic);
             TraverseTypes(interfaceType, (interfaceType, method, parameter) => { //SA??? it would be enough to collect return types; if a IServerSide is found but never returned, it cannot be used anywayy
                 System.Type parameterType = parameter == null ? method.ReturnType : parameter.ParameterType;
                 if (parameterType == typeof(void)) return;

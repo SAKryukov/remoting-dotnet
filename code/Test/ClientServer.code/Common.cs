@@ -75,12 +75,12 @@ namespace Test {
         internal static Node second, third, fourth;
     } //DirectedGraph
 
-    interface IServerA : Remoting.IServerSide {
+    interface IDynamicA : Remoting.IDynamic {
         int A(int b, int c);
-    }
+    } //interface IDynamicA
 
     interface ITestContract {
-        IServerA A();
+        IDynamicA A();
         string A(int a, int b);
         string P { get; set; }
         string A(string a, int b);

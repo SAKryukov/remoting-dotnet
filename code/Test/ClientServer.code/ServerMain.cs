@@ -10,12 +10,12 @@
 namespace Test {
     using Console = System.Console;
 
-    class ImplementServerA : IServerA {
-        int IServerA.A(int b, int c) { return b * c; }
+    class ImplementServerA : IDynamicA {
+        int IDynamicA.A(int b, int c) { return b * c; }
     }
 
     class Implementation : ITestContract {
-        IServerA ITestContract.A() { return new ImplementServerA(); }
+        IDynamicA ITestContract.A() { return new ImplementServerA(); }
         string ITestContract.A(int a, int b) {
             return $"First A: a: {a}, b:{b}, a+b: {a+b} ";
         }

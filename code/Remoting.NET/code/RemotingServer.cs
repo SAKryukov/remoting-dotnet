@@ -11,7 +11,7 @@ namespace Remoting {
     using System.Reflection;
     using System.Reflection.Emit;
     using Object = System.Object;
-    using UniqueId = System.Int64;
+    //using UniqueId = System.Int64; //SA???
     using ObjectIDGenerator = System.Runtime.Serialization.ObjectIDGenerator;
     using ObjectIdDictionary = System.Collections.Generic.Dictionary<System.Int64, object>;
     using DataContractSerializer = System.Runtime.Serialization.DataContractSerializer;
@@ -226,7 +226,7 @@ namespace Remoting {
             if (response == null)
                 return DefinitionSet.NullIndicator;
             DataContractSerializer responseSerializer = new(response.GetType());
-            if (response.GetType().IsAssignableTo(typeof(IServerSide))) {
+            if (response.GetType().IsAssignableTo(typeof(IDynamic))) {
                 var id = idGenerator.GetId(response, out bool firstTime);
                 if (firstTime)
                     objectIdDictionary.Add(id, response);
