@@ -16,7 +16,6 @@ namespace Remoting {
     using TypeEnumerable = System.Collections.Generic.IEnumerable<System.Type>;
     using TypeList = System.Collections.Generic.List<System.Type>;
     using TypeSet = System.Collections.Generic.HashSet<System.Type>;
-    using Debug = System.Diagnostics.Debug;
 
     public static class DefinitionSet {
         // IANA port numbers, IETF RFC6335:
@@ -67,12 +66,12 @@ namespace Remoting {
     } //class MethodSchema
 
     [DataContract(Namespace = "r")]
-    class ServerSideParameterSchema {
-        internal ServerSideParameterSchema(UniqueId implementorId) { this.implementorId = implementorId; }
+    class DynamicParameterSchema {
+        internal DynamicParameterSchema(UniqueId implementorId) { this.implementorId = implementorId; }
         internal UniqueId ImplementorId { get { return implementorId; } }
         [DataMember(Name = "i")]
         readonly UniqueId implementorId;
-    } //ServerSideParameterSchema
+    } //DynamicParameterSchema
 
     static class Utility {
         class InvalidInterfaceException : System.ApplicationException {
@@ -105,7 +104,7 @@ namespace Remoting {
         } //TraverseTypes
         internal static TypeEnumerable CollectKnownTypes(System.Type interfaceType) {
             TypeSet typeSet = new();
-            typeSet.Add(typeof(ServerSideParameterSchema));
+            typeSet.Add(typeof(DynamicParameterSchema));
             static void AddType(TypeSet typeSet, System.Type type) {
                 if (type == typeof(void)) return;
                 if (type.IsPrimitive) return;
@@ -124,9 +123,9 @@ namespace Remoting {
             foreach (var value in typeSet) result.Add(value);
             return result;
         } //CollectKnownTypes
-        internal static void CollectServerSideInterfaceTypes(System.Type interfaceType, TypeSet container) {
+        internal static void CollectDynamicInterfaceTypes(System.Type interfaceType, TypeSet container) {
             var targetType = typeof(IDynamic);
-            TraverseTypes(interfaceType, (interfaceType, method, parameter) => { //SA??? it would be enough to collect return types; if a IServerSide is found but never returned, it cannot be used anywayy
+            TraverseTypes(interfaceType, (interfaceType, method, parameter) => { //SA??? it would be enough to collect return types; if a IDynamic is found but never returned, it cannot be used anywayy
                 System.Type parameterType = parameter == null ? method.ReturnType : parameter.ParameterType;
                 if (parameterType == typeof(void)) return;
                 if (!parameterType.IsInterface) return;
@@ -134,9 +133,9 @@ namespace Remoting {
                     container.Add(parameterType);
                 var baseInterfaces = parameterType.GetInterfaces();
                 foreach (var baseInterface in baseInterfaces)
-                    CollectServerSideInterfaceTypes(baseInterface, container);
+                    CollectDynamicInterfaceTypes(baseInterface, container);
             });
-        } //CollectServerSideInterfaceTypes
+        } //CollectDynamicInterfaceTypes
         internal static string ObjectToString(DataContractSerializer serializer, object graph) {
             using MemoryStream memoryStream = new();
             serializer.WriteObject(memoryStream, graph);
