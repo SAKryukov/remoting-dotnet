@@ -83,7 +83,7 @@ namespace Remoting {
                     return null;
                 else if (responseLine == DefinitionSet.InterfaceMethodNotFoundIndicator)
                     throw new MethodNotFoundException(methodSchema.MethodName);
-                if (responseLine != null && responseLine.Length > 0 && char.IsDigit(responseLine[0])) { //IDynamic
+                if (responseLine != null && responseLine.Length > 0 && char.IsDigit(responseLine[0])) { //IDynamic UniqueID
                     var uniqueId = UniqueId.Parse(responseLine);
                     if (!context.dynamicProxyDictionary.TryGetValue(uniqueId, out object response)) {
                         var instantiatedMethod = context.dispathProxyCreator.MakeGenericMethod(new System.Type[] { targetMethod.ReturnType, typeof(ClientProxy)});
@@ -93,7 +93,7 @@ namespace Remoting {
                         return dynamicProxy;
                     } else
                         return response;
-                } //
+                } //if IDynamic
                 DataContractSerializer returnSerializer = new(targetMethod.ReturnType);
                 return Utility.StringToObject(returnSerializer, responseLine);
             } //Invoke

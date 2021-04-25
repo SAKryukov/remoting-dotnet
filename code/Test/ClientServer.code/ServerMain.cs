@@ -10,12 +10,16 @@
 namespace Test {
     using Console = System.Console;
 
-    class ImplementServerA : IDynamicTest {
+    class DynamicInterfaceImplementation : IDynamicTest {
         int IDynamicTest.A(int b, DynamicParameter c) { return b * c.c; }
     }
 
     class Implementation : ITestContract {
-        IDynamicTest ITestContract.DynamicTestMethod() { return new ImplementServerA(); }
+        public Implementation() {
+            dynamicInterfaceImplementationInstance = new DynamicInterfaceImplementation(); ;
+        }
+        readonly DynamicInterfaceImplementation dynamicInterfaceImplementationInstance;
+        IDynamicTest ITestContract.DynamicTestMethod() { return dynamicInterfaceImplementationInstance; }
         string ITestContract.A(int a, int b) {
             return $"First A: a: {a}, b:{b}, a+b: {a+b} ";
         }
