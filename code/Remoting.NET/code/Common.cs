@@ -14,7 +14,9 @@ namespace Remoting {
     using Encoding = System.Text.Encoding;
     using MemoryStream = System.IO.MemoryStream;
     using TypeEnumerable = System.Collections.Generic.IEnumerable<System.Type>;
+    using ITypeList = System.Collections.Generic.IList<System.Type>;
     using TypeList = System.Collections.Generic.List<System.Type>;
+    using ITypeSet = System.Collections.Generic.ISet<System.Type>;
     using TypeSet = System.Collections.Generic.HashSet<System.Type>;
 
     public static class DefinitionSet {
@@ -103,9 +105,9 @@ namespace Remoting {
             } //AddMethods
         } //TraverseTypes
         internal static TypeEnumerable CollectKnownTypes(System.Type interfaceType) {
-            TypeSet typeSet = new();
+            ITypeSet typeSet = new TypeSet();
             typeSet.Add(typeof(DynamicParameterSchema));
-            static void AddType(TypeSet typeSet, System.Type type) {
+            static void AddType(ITypeSet typeSet, System.Type type) {
                 if (type == typeof(void)) return;
                 if (type.IsPrimitive) return;
                 if (type == typeof(string)) return;
@@ -119,12 +121,12 @@ namespace Remoting {
                 else
                     throw new InvalidInterfaceException(interfaceType, method, parameter);
             });
-            TypeList result = new();
+            ITypeList result = new TypeList();
             CollectDynamicInterfaceTypes(interfaceType, typeSet);
             foreach (var value in typeSet) result.Add(value);
             return result;
         } //CollectKnownTypes
-        internal static void CollectDynamicInterfaceTypes(System.Type interfaceType, TypeSet container) {
+        internal static void CollectDynamicInterfaceTypes(System.Type interfaceType, ITypeSet container) {
             var targetType = typeof(IDynamic);
             TraverseTypes(interfaceType, (interfaceType, method, parameter) => {
                 System.Type parameterType = parameter == null ? method.ReturnType : parameter.ParameterType;

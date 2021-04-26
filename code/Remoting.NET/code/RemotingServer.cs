@@ -19,10 +19,12 @@ namespace Remoting {
     using Stream = System.IO.Stream;
     using StreamReader = System.IO.StreamReader;
     using StreamWriter = System.IO.StreamWriter;
+    using IClientList = System.Collections.Generic.IList<ClientWrapper>;
     using ClientList = System.Collections.Generic.List<ClientWrapper>;
     using Dns = System.Net.Dns;
     using IPAddress = System.Net.IPAddress;
     using Thread = System.Threading.Thread;
+    using IMethodDictionary = System.Collections.Generic.IDictionary<string, System.Reflection.Emit.DynamicMethod>;
     using MethodDictionary = System.Collections.Generic.Dictionary<string, System.Reflection.Emit.DynamicMethod>;
     using ManualResetEvent = System.Threading.ManualResetEvent;
     using Debug = System.Diagnostics.Debug;
@@ -34,7 +36,7 @@ namespace Remoting {
             ExecutionPhaseChanged?.Invoke(this, new ExecutionPhaseEventArgs(ExecutionPhase.ReflectionStarted));
             var knownTypes = Utility.CollectKnownTypes(typeof(CONTRACT));
             serializer = new(typeof(MethodSchema), knownTypes);
-            methodDictionary = new();
+            methodDictionary = new MethodDictionary();
             CreateImplementingDynamicMethods(implementor);
             ExecutionPhaseChanged?.Invoke(this, new ExecutionPhaseEventArgs(ExecutionPhase.ReflectionComplete));
             this.implementor = implementor;
@@ -91,7 +93,7 @@ namespace Remoting {
 
     public partial class Server<CONTRACT, IMPLEMENTATION> {
 
-        static void CreateImplementingDynamicMethods(System.Type interfaceType, object implementor, MethodDictionary methodDictionary) {
+        static void CreateImplementingDynamicMethods(System.Type interfaceType, object implementor, IMethodDictionary methodDictionary) {
             AddCallers(methodDictionary, implementor.GetType(), interfaceType);
             static DynamicMethod CreateCaller(System.Type implementor, MethodInfo method) {
                 var parameterInfo = method.GetParameters();
@@ -107,7 +109,7 @@ namespace Remoting {
                 generator.Emit(OpCodes.Ret);
                 return result;
             } //CreateCaller
-            static void AddCallers(MethodDictionary dictionary, System.Type implementorType, System.Type interfaceType) {
+            static void AddCallers(IMethodDictionary dictionary, System.Type implementorType, System.Type interfaceType) {
                 var interfaces = interfaceType.GetInterfaces();
                 foreach (var parentInterfaceType in interfaces)
                     AddCallers(dictionary, implementorType, parentInterfaceType);
@@ -249,10 +251,10 @@ namespace Remoting {
         readonly IMPLEMENTATION implementor;
         readonly DataContractSerializer serializer;
         readonly TcpListener listener;
-        readonly ClientList clientList = new();
+        readonly IClientList clientList = new ClientList();
         readonly IPAddress localIpAddress;
         readonly int port;
-        readonly MethodDictionary methodDictionary;
+        readonly IMethodDictionary methodDictionary;
         readonly ManualResetEvent protocolStopper = new(false);
 
     } //class Server

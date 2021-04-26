@@ -16,6 +16,7 @@ namespace Remoting {
     using StreamWriter = System.IO.StreamWriter;
     using IDisposable = System.IDisposable;
     using UniqueId = System.Int64;
+    using IProxyDictionary = System.Collections.Generic.IDictionary<System.Int64, object>;
     using ProxyDictionary = System.Collections.Generic.Dictionary<System.Int64, object>;
     using Debug = System.Diagnostics.Debug;
 
@@ -109,7 +110,7 @@ namespace Remoting {
         readonly CONTRACT proxy;
         readonly string hostname;
         readonly int port;
-        readonly ProxyDictionary dynamicProxyDictionary = new();
+        readonly IProxyDictionary dynamicProxyDictionary = new ProxyDictionary();
         readonly MethodInfo dispathProxyCreator;
 
     } //class Client
