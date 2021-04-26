@@ -216,14 +216,16 @@ namespace Remoting {
 
         string GenerateResponse(string request) {
             var callRequest = (MethodSchema)Utility.StringToObject(serializer, request);
-            var dynamicMethod = methodDictionary[callRequest.MethodName]; // the heart of the remote procedure call
-            if (dynamicMethod == null) {
+            object dynamicInterfaceImplementation = null;
+            if (callRequest.dynamicInterfaceImplementationUniqueId.HasValue)
+                objectIdDictionary.TryGetValue(callRequest.dynamicInterfaceImplementationUniqueId.Value, out dynamicInterfaceImplementation);
+            if (!methodDictionary.TryGetValue(callRequest.MethodName, out DynamicMethod dynamicMethod)) {
                 ExecutionPhaseChanged?.Invoke(this, new ExecutionPhaseEventArgs(ExecutionPhase.Failed));
                 return DefinitionSet.InterfaceMethodNotFoundIndicator;
             } //if
             var allParameters = new Object[callRequest.actualParameters.Length + 1];
             callRequest.actualParameters.CopyTo(allParameters, 1);
-            allParameters[0] = implementor; // plays the role of "this"
+            allParameters[0] = dynamicInterfaceImplementation ?? implementor; // plays the role of "this"
             Object response = dynamicMethod.Invoke(null, allParameters); // the heart of the remote procedure call
             if (response == null)
                 return DefinitionSet.NullIndicator;

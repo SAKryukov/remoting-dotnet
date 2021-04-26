@@ -11,7 +11,7 @@ namespace Test {
     using Console = System.Console;
 
     class DynamicInterfaceImplementation : IDynamicTest {
-        int IDynamicTest.A(int b, DynamicParameter c) { return b * c.c; }
+        int IDynamicTest.DynamicTestMethod(int b, DynamicParameter c) { return b * c.c; }
     }
 
     class Implementation : ITestContract {

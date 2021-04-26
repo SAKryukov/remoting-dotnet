@@ -55,9 +55,10 @@ namespace Remoting {
     [DataContract(Namespace = "r")]
     class MethodSchema {    
         MethodSchema() { }
-        internal MethodSchema(string methodName, object[] actialParameters) {
+        internal MethodSchema(string methodName, object[] actualParameters, UniqueId? dynamicInterfaceImplementationUniqueId = null) {
             this.methodName = methodName;
-            this.actualParameters = actialParameters;
+            this.actualParameters = actualParameters;
+            this.dynamicInterfaceImplementationUniqueId = dynamicInterfaceImplementationUniqueId;
         } //MethodSchema
         internal string MethodName { get { return methodName; } }
         internal object[] ActualParameters { get { return actualParameters; } }
@@ -65,15 +66,9 @@ namespace Remoting {
         internal string methodName;
         [DataMember(Name = "a")]
         internal object[] actualParameters;
+        [DataMember(Name = "u")]
+        internal UniqueId? dynamicInterfaceImplementationUniqueId;
     } //class MethodSchema
-
-    [DataContract(Namespace = "r")]
-    class DynamicParameterSchema {
-        internal DynamicParameterSchema(UniqueId implementorId) { this.implementorId = implementorId; }
-        internal UniqueId ImplementorId { get { return implementorId; } }
-        [DataMember(Name = "i")]
-        readonly UniqueId implementorId;
-    } //DynamicParameterSchema
 
     static class Utility {
         class InvalidInterfaceException : System.ApplicationException {
@@ -106,7 +101,6 @@ namespace Remoting {
         } //TraverseTypes
         internal static TypeEnumerable CollectKnownTypes(System.Type interfaceType) {
             ITypeSet typeSet = new TypeSet();
-            typeSet.Add(typeof(DynamicParameterSchema));
             static void AddType(ITypeSet typeSet, System.Type type) {
                 if (type == typeof(void)) return;
                 if (type.IsPrimitive) return;

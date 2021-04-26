@@ -56,10 +56,16 @@ namespace Remoting {
 
         interface IClientInfrastructure {
             Client<CONTRACT> Context { set; }
+            UniqueId DynamicInterfaceImplementationUniqueId { set; }
         } //interface IClientInfrastructure
 
         public class ClientProxy : DispatchProxy, IClientInfrastructure, IConnectable {
             Client<CONTRACT> IClientInfrastructure.Context { set { this.context = value; } }
+            UniqueId IClientInfrastructure.DynamicInterfaceImplementationUniqueId {
+                set {
+                    dynamicInterfaceImplementationUniqueId = value;
+                }
+            } //IClientInfrastructure.dynamicInterfaceImplementationUniqueId
             void IConnectable.Disconnect() {
                 if (reader != null) reader.Dispose();
                 if (writer != null) writer.Dispose();
@@ -69,7 +75,7 @@ namespace Remoting {
                 context.client = new TcpClient();
             } //Disconnect
             protected override object Invoke(MethodInfo targetMethod, object[] args) {
-                if ((!context.client.Connected) || writer == null || reader == null) {
+                    if ((!context.client.Connected) || writer == null || reader == null) {
                     if ((!context.client.Connected))
                         context.client.Connect(context.hostname, context.port);
                     stream = context.client.GetStream();
@@ -77,7 +83,7 @@ namespace Remoting {
                     writer = new(stream);
                     writer.AutoFlush = true;
                 } //if
-                var methodSchema = new MethodSchema(targetMethod.ToString(), args);
+                var methodSchema = new MethodSchema(targetMethod.ToString(), args, dynamicInterfaceImplementationUniqueId);
                 string requestLine = Utility.ObjectToString(context.serializer, methodSchema);
                 writer.WriteLine(requestLine);
                 string responseLine = reader.ReadLine();
@@ -91,6 +97,7 @@ namespace Remoting {
                         var instantiatedMethod = context.dispathProxyCreator.MakeGenericMethod(new System.Type[] { targetMethod.ReturnType, typeof(ClientProxy)});
                         var dynamicProxy = instantiatedMethod.Invoke(null, null);
                         ((IClientInfrastructure)dynamicProxy).Context = this.context;
+                        ((IClientInfrastructure)dynamicProxy).DynamicInterfaceImplementationUniqueId = uniqueId;
                         context.dynamicProxyDictionary.Add(uniqueId, dynamicProxy);
                         return dynamicProxy;
                     } else
@@ -100,6 +107,7 @@ namespace Remoting {
                 return Utility.StringToObject(returnSerializer, responseLine);
             } //Invoke
             Client<CONTRACT> context;
+            UniqueId? dynamicInterfaceImplementationUniqueId;
             Stream stream;
             StreamReader reader;
             StreamWriter writer;

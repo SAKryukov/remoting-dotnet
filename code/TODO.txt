@@ -1,0 +1,4 @@
+1) RemotingServer.cs : AddCallers should add dynamic methods for IDynamic-based methods
+2) ITestContract method IDynamicTest DynamicTestMethod() should return implementation of IDynamicTest DONE
+3) Client side should create IDynamicTest proxies DONE
+3) int IDynamicTest.DynamicTestMethod(int b, DynamicParameter c) should be called and return

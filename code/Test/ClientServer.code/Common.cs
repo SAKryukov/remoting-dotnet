@@ -83,7 +83,7 @@ namespace Test {
     }
 
     interface IDynamicTest : Remoting.IDynamic {
-        int A(int b, DynamicParameter c);
+        int DynamicTestMethod(int b, DynamicParameter c);
     } //interface IDynamicTest
 
     interface ITestContract {
