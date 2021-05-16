@@ -47,10 +47,10 @@ namespace Remoting {
             $"{invalidInterface.FullName}.{badMethod.Name}, parameter {badParameter.ParameterType.FullName} {badParameter.Name} is not an input parameter, cannot be serialized";
     } //class DefinitionSet
 
-    public interface IDynamic {
+    public interface ISubcontract {
         // not System.IDisposable.Dispose, used to remove from the dictionary of dynamic implementation objects objectIdDictionary:
         void Dispose() { }
-    } //IDynamic
+    } //ISubcontract
 
     [DataContract(Namespace = "r")]
     class MethodSchema {    
@@ -121,7 +121,7 @@ namespace Remoting {
             return result;
         } //CollectKnownTypes
         internal static void CollectDynamicInterfaceTypes(System.Type interfaceType, ITypeSet container) {
-            var targetType = typeof(IDynamic);
+            var targetType = typeof(ISubcontract);
             TraverseTypes(interfaceType, (interfaceType, method, parameter) => {
                 System.Type parameterType = parameter == null ? method.ReturnType : parameter.ParameterType;
                 if (parameterType == typeof(void)) return;

@@ -61,8 +61,8 @@ namespace Test {
 
             Console.WriteLine("Ready to connect and call first method remotely... To quit, press any key...");
             try {
-                var dynamic = remotingClient.Proxy.DynamicTestMethod();
-                //dynamic.DynamicTestMethod(100, new DynamicParameter(111));
+                var subcontract = remotingClient.Proxy.TestSubcontractMethod();
+                subcontract.TestSubcontractMethod(100, new SubcontractParameter(111));
                 remotingClient.Proxy.B(1, 2);
                 remotingClient.Proxy.B(1, 2);
                 remotingClient.Proxy.B(1, 2);

@@ -76,18 +76,18 @@ namespace Test {
     } //DirectedGraph
 
     [DataContract(Namespace = "https://www.SAKryukov.org/schema/Remoting.NET", IsReference = true)]
-    class DynamicParameter {
-        internal DynamicParameter(int c) { this.c = c; }
+    class SubcontractParameter {
+        internal SubcontractParameter(int c) { this.c = c; }
         [DataMember]
         public int c;
-    }
+    } //class SubcontractParameter
 
-    interface IDynamicTest : Remoting.IDynamic {
-        int DynamicTestMethod(int b, DynamicParameter c);
-    } //interface IDynamicTest
+    interface ISubcontractTest : Remoting.ISubcontract {
+        int TestSubcontractMethod(int b, SubcontractParameter c);
+    } //interface ISubcontractTest
 
     interface ITestContract {
-        IDynamicTest DynamicTestMethod();
+        ISubcontractTest TestSubcontractMethod();
         string A(int a, int b);
         string P { get; set; }
         string A(string a, int b);

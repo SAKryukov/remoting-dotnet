@@ -10,8 +10,8 @@
 namespace Test {
     using Console = System.Console;
 
-    class DynamicInterfaceImplementation : IDynamicTest {
-        int IDynamicTest.DynamicTestMethod(int b, DynamicParameter c) { return b * c.c; }
+    class DynamicInterfaceImplementation : ISubcontractTest {
+        int ISubcontractTest.TestSubcontractMethod(int b, SubcontractParameter c) { return b * c.c; }
     }
 
     class Implementation : ITestContract {
@@ -19,7 +19,7 @@ namespace Test {
             dynamicInterfaceImplementationInstance = new DynamicInterfaceImplementation(); ;
         }
         readonly DynamicInterfaceImplementation dynamicInterfaceImplementationInstance;
-        IDynamicTest ITestContract.DynamicTestMethod() { return dynamicInterfaceImplementationInstance; }
+        ISubcontractTest ITestContract.TestSubcontractMethod() { return dynamicInterfaceImplementationInstance; }
         string ITestContract.A(int a, int b) {
             return $"First A: a: {a}, b:{b}, a+b: {a+b} ";
         }

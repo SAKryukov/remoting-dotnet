@@ -230,7 +230,7 @@ namespace Remoting {
             if (response == null)
                 return DefinitionSet.NullIndicator;
             DataContractSerializer responseSerializer = new(response.GetType());
-            if (response.GetType().IsAssignableTo(typeof(IDynamic))) {
+            if (response.GetType().IsAssignableTo(typeof(ISubcontract))) {
                 var id = idGenerator.GetId(response, out bool firstTime);
                 if (firstTime)
                     objectIdDictionary.Add(id, response);
