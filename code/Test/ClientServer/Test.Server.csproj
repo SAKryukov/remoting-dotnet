@@ -5,8 +5,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\ClientServer.code\Common.cs" Link="Common.cs" />
     <Compile Include="..\ClientServer.code\ServerMain.cs" Link="ServerMain.cs" />
+    <Compile Include="..\ClientServer.code\Test.Definitions.cs" Link="Test.Definitions.cs" />
   </ItemGroup>
 
   <ItemGroup>

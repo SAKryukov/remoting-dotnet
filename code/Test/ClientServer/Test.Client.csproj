@@ -6,7 +6,7 @@
 
   <ItemGroup>
     <Compile Include="..\ClientServer.code\ClientMain.cs" Link="ClientMain.cs" />
-    <Compile Include="..\ClientServer.code\Common.cs" Link="Common.cs" />
+    <Compile Include="..\ClientServer.code\Test.Definitions.cs" Link="Test.Definitions.cs" />
   </ItemGroup>
 
   <ItemGroup>
