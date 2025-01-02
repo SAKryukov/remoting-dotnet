@@ -1,0 +1,32 @@
+﻿<!--
+    Copyright (C) 2024 by Sergey A Kryukov
+    https://www.SAKryukov.org
+    https://github.com/SAKryukov
+    https://www.codeproject.com/Members/SAKryukov
+-->
+
+<Project>
+ 
+  <PropertyGroup> <!-- customize:  -->
+
+    <TargetFramework>net5.0</TargetFramework>
+    <CustomUnifiedVersion>0.8.0.0</CustomUnifiedVersion>
+    <!-- can be alpha, beta, RC1, RC2, etc.: -->
+    <CustomInformationalVersionSuffix></CustomInformationalVersionSuffix>
+
+    <Product>Remoting.NET</Product>
+    <Description>Remoting for .NET Core, .NET 5, and later versions</Description>
+    <Copyright>Copyright © 2017-2025 by Sergey A Kryukov</Copyright>
+    <Authors>Sergey A Kryukov</Authors>
+    <RepositoryUrl>https://github.com/SAKryukov/remoting-dotnet</RepositoryUrl>
+    <Company>SA</Company>
+
+    <AssemblyTitle>$(Product) Demo</AssemblyTitle>
+
+  </PropertyGroup>
+
+  <PropertyGroup> <!-- customize:  -->
+    <RootNamespace>SA</RootNamespace>
+  </PropertyGroup>
+
+</Project>

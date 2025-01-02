@@ -1,17 +1,49 @@
+﻿<!--
+    Copyright (C) 2024 by Sergey A Kryukov
+    https://www.SAKryukov.org
+    https://github.com/SAKryukov
+-->
+
 <Project>
-    <PropertyGroup>
-        <BaseIntermediateOutputPath>$(SolutionDir).intermediateOutput\$(MSBuildProjectName)\$(Configuration).$(Platform)</BaseIntermediateOutputPath>
-        <OutputPath>$(SolutionDir)\output.$(Configuration).$(Platform)</OutputPath>
-        <TargetFramework>net5.0</TargetFramework>
-        <!-- Equivalent of "AssemblyInfo.cs": -->
-        <GenerateAssemblyInfo>true</GenerateAssemblyInfo> <!-- default anyway -->
-        <Product>Remoting.NET</Product>
-        <Description>Remoting for .NET Core, .NET 5, and later versions</Description>
-        <Copyright>Copyright © 2017-2021 by Sergey A Kryukov</Copyright>
-        <Authors>Sergey A Kryukov</Authors>
-        <RepositoryUrl>https://github.com/SAKryukov/remoting-dotnet</RepositoryUrl>
-        <Version>0.7.0.0</Version>
-        <AssemblyVersion>0.7.0.0</AssemblyVersion>
-        <FileVersion>0.7.0.0</FileVersion>
-    </PropertyGroup>
+    <Import Project="$(MSBuildThisFileDirectory)Metadata.props"/>
+ 
+  <PropertyGroup> <!-- change value, don't change property name: -->
+    <_intermediateOutputPathRoot>$(MSBuildThisFileDirectory).intermediateOutput</_intermediateOutputPathRoot>
+    <RootNamespace>$(RootNamespace)</RootNamespace>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Platform)'==''">
+    <Platform>AnyCPU</Platform>
+  </PropertyGroup>
+
+  <PropertyGroup>
+
+    <NoWarn>$(NoWarn);NETSDK1138;IDE0130</NoWarn>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!-- Placeholders: -->
+    <WarningsAsErrors></WarningsAsErrors>
+    <WarningsNotAsErrors></WarningsNotAsErrors>
+
+    <BaseIntermediateOutputPath>$([System.IO.Path]::Combine(
+        $(_intermediateOutputPathRoot),
+        $(MSBuildProjectName),
+        $(Platform).$(Configuration)))</BaseIntermediateOutputPath>
+    <OutputPath>$([System.IO.Path]::Combine(
+        $(MSBuildThisFileDirectory),
+        $(MSBuildThisFileDirectory),
+        output.$(Platform).$(Configuration)))</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
+
+    <AssemblyVersion>$(CustomUnifiedVersion)</AssemblyVersion>
+    <FileVersion>$(CustomUnifiedVersion)</FileVersion>
+    <InformationalVersion>$(CustomUnifiedVersion) $(CustomInformationalVersionSuffix)</InformationalVersion>
+
+  </PropertyGroup>
+
 </Project>
